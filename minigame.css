@@ -1,0 +1,236 @@
+/* ========== MINI-GAME SYSTEM (PREMIUM) ========== */
+.minigame-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent; /* No haze */
+    backdrop-filter: none; /* No blur */
+    z-index: 5000;
+    display: none;
+    align-items: flex-end; /* Align to bottom */
+    justify-content: center;
+    padding-bottom: 220px; /* Position JUST above the dialogue box */
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.minigame-overlay.visible {
+    display: flex;
+}
+
+.mg-container {
+    width: 90%;
+    max-width: 620px;
+    max-height: calc(100vh - 260px);
+    background: rgba(10, 10, 15, 0.85); /* Matches Dialogue Box exactly */
+    backdrop-filter: blur(30px); /* Matches Dialogue Box */
+    border: 2px solid rgba(255, 255, 255, 0.08); /* Matches Dialogue Box subtle border */
+    border-radius: 24px; /* Matches Dialogue Box */
+    padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); /* Matches Dialogue Box shadow depth */
+    position: relative;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    animation: mg-pop-up 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: auto;
+}
+
+@keyframes mg-pop-up {
+    from { transform: translateY(40px) scale(0.95); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.mg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Very subtle separator */
+}
+
+.mg-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mg-icon { font-size: 1.8rem; filter: drop-shadow(0 0 8px rgba(212, 168, 83, 0.4)); }
+.mg-title { 
+    font-family: 'Cinzel', serif; 
+    font-size: 1.2rem; 
+    letter-spacing: 4px; 
+    font-weight: 700; 
+    color: var(--accent-gold); 
+    text-transform: uppercase; 
+    text-shadow: 0 0 10px rgba(212, 168, 83, 0.4);
+}
+
+.mg-timer-box {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px 16px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--accent-gold);
+    box-shadow: 0 0 10px rgba(212, 168, 83, 0.1);
+}
+
+.mg-timer-label { 
+    display: block; 
+    font-size: 0.6rem; 
+    color: var(--accent-gold-dim); 
+    letter-spacing: 2px; 
+    text-transform: uppercase; 
+    font-weight: 700;
+}
+.mg-timer-val { 
+    font-family: 'Inter', sans-serif; 
+    font-size: 1.4rem; 
+    font-weight: 800; 
+    color: #fff;
+}
+
+.mg-canvas-container {
+    min-height: 250px;
+    height: auto;
+    max-height: 45vh; /* Scale with screen height */
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 1;
+}
+
+.mg-instructions {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #a8a4b8;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 15px;
+    opacity: 0.8;
+}
+
+/* Falling Game */
+.mg-falling-icon {
+    position: absolute;
+    font-size: 2.5rem;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s;
+}
+
+/* Wire Game */
+.mg-wire-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+.mg-wire-cell {
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.mg-wire-icon { font-size: 2rem; transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+
+/* Ordering Game */
+.mg-order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px;
+}
+.mg-order-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #e8e6f0;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+}
+.mg-order-item:hover { 
+    background: rgba(212, 168, 83, 0.05); 
+    border-color: rgba(212, 168, 83, 0.3);
+    transform: translateX(4px); 
+}
+.mg-order-item .handle { color: var(--accent-gold); font-size: 1.2rem; }
+.mg-order-item.dragging {
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.1);
+    border-style: dashed;
+}
+.mg-order-item.mg-item-selected {
+    border-color: var(--accent-gold);
+    background: rgba(212, 168, 83, 0.1);
+    box-shadow: 0 0 15px rgba(212, 168, 83, 0.2);
+}
+
+.mg-order-item.mg-item-success {
+    border-color: #00ffaa !important;
+    background: rgba(0, 255, 170, 0.1) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.3) !important;
+    animation: mg-item-pulse 1s infinite alternate;
+}
+
+@keyframes mg-item-pulse {
+    from { filter: brightness(1); }
+    to { filter: brightness(1.3) contrast(1.1); }
+}
+
+.mg-success-flash {
+    animation: mg-border-flash 0.5s 2 alternate;
+}
+
+@keyframes mg-border-flash {
+    from { border-color: rgba(255,255,255,0.08); }
+    to { border-color: #00ffaa; box-shadow: inset 0 0 50px rgba(0, 255, 170, 0.1); }
+}
+
+/* Stabilizer Game */
+.mg-stabilizer-ui { padding: 40px; }
+.mg-graph-area { height: 150px; background: rgba(0,0,0,0.5); position: relative; border-radius: 10px; margin-bottom: 30px; }
+.mg-target-line { position: absolute; left: 0; right: 0; top: 50%; height: 20%; transform: translateY(-50%); background: rgba(212, 168, 83, 0.1); border-top: 1px dashed rgba(212, 168, 83, 0.3); border-bottom: 1px dashed rgba(212, 168, 83, 0.3); }
+.mg-current-line { position: absolute; left: 0; right: 0; height: 4px; background: var(--accent-gold); box-shadow: 0 0 10px var(--accent-gold); transition: top 0.1s linear; }
+
+/* Feedback */
+.mg-feedback {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 100;
+    border-radius: 20px;
+    padding: 40px;
+}
+.mg-feedback-title { font-size: 2.5rem; letter-spacing: 5px; margin-bottom: 15px; font-weight: 900; }
+.feedback-success { color: #00ffaa; text-shadow: 0 0 20px rgba(0, 255, 128, 0.5); }
+.feedback-fail { color: #ff4757; text-shadow: 0 0 20px rgba(255, 71, 87, 0.5); }
+.mg-feedback-text { color: #a8a4b8; margin-bottom: 30px; font-size: 1.1rem; }
+.mg-feedback-btn { 
+    background: transparent; border: 1px solid #f1c27d; color: #f1c27d;
+    padding: 12px 40px; font-weight: 700; letter-spacing: 2px; cursor: pointer; transition: all 0.3s;
+}
+.mg-feedback-btn:hover { background: #f1c27d; color: #000; box-shadow: 0 0 20px rgba(212, 168, 83, 0.4); }

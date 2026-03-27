@@ -6,8 +6,10 @@
     <meta name="description" content="Aegis of Balance - An interactive global strategy simulation where you restore a collapsing world as the Controller of the World Government.">
     <title>Aegis of Balance — Global Strategy Simulation</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="minigame.css">
 </head>
 <body>
+<div id="toast-container" class="toast-container"></div>
 
 <!-- ========== INTRO SCREEN ========== -->
 <div id="intro-screen" class="intro-screen">
@@ -111,9 +113,6 @@
                 <button class="sim-speed-btn" id="sim-speed-3" onclick="game.setSpeed(3)" title="Ultra Speed">▶▶▶</button>
             </div>
             <div class="sim-time-panel">
-                <div class="sim-progress-container">
-                    <div class="sim-progress-fill" id="sim-progress-fill"></div>
-                </div>
                 <div class="sim-date" id="sim-date">January 1, 2024</div>
             </div>
         </div>
@@ -236,19 +235,7 @@
     </div>
 </div>
 
-<!-- ========== MINI-GAME MODAL ========== -->
-<div id="minigame-overlay" class="minigame-overlay">
-    <div class="minigame-container">
-        <h2 id="mg-title" class="game-title">Crisis Intervention</h2>
-        <p id="mg-desc">Solve the crisis immediately!</p>
-        <div id="mg-timer" class="minigame-timer">10s</div>
-        <div id="mg-canvas" class="minigame-canvas-area">
-            <!-- Game content injected here -->
-        </div>
-        <div id="mg-ui"></div>
-        <button id="mg-submit" class="next-turn-btn" style="width:100%; margin-top:10px">SUBMIT ACTION</button>
-    </div>
-</div>
+
 
 <!-- ========== SPECIALIST INFO MODAL ========== -->
 <div id="spec-modal-overlay" class="modal-overlay">
@@ -278,12 +265,40 @@
                 </div>
 
                 <div class="sm-costs-panel">
-                    <div class="sm-section-label">Deployment Costs</div>
+                    <div class="sm-section-label">Deployment Requirements</div>
                     <div id="sm-costs" class="sm-costs-row"></div>
                 </div>
 
-                <button id="sm-select-btn" class="sm-action-btn">SELECT SPECIALIST</button>
+                <div class="sm-actions-row">
+                    <button id="sm-chat-btn" class="sm-chat-btn">
+                        <span class="btn-glow"></span>
+                        <span class="btn-text">CHAT</span>
+                    </button>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== CHARACTER CHAT OVERLAY ========== -->
+<div id="chat-overlay" class="chat-overlay">
+    <div class="chat-window">
+        <div class="chat-header">
+            <div class="chat-character-info">
+                <img id="chat-portrait" src="" alt="">
+                <div>
+                    <h3 id="chat-name">NAME</h3>
+                    <p id="chat-status">ONLINE / SECURE CHANNEL</p>
+                </div>
+            </div>
+            <button class="chat-close" onclick="game.closeChat()">×</button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages populate here -->
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type your message to the specialist..." onkeypress="if(event.key==='Enter') game.sendChatMessage()">
+            <button onclick="game.sendChatMessage()" class="chat-send-btn">SEND</button>
         </div>
     </div>
 </div>
@@ -332,6 +347,30 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MINIGAME OVERLAY -->
+<div id="minigame-overlay" class="minigame-overlay">
+    <div class="mg-container">
+        <div class="mg-header">
+            <div class="mg-title-row">
+                <span id="mg-icon" class="mg-icon">🌳</span>
+                <span id="mg-title" class="mg-title">MINIGAME</span>
+            </div>
+            <div class="mg-timer-box">
+                <span class="mg-timer-label">TIME</span>
+                <span id="mg-timer" class="mg-timer-val">30</span>
+            </div>
+        </div>
+        
+        <div id="mg-canvas-container" class="mg-canvas-container">
+            <!-- Dynamic Content -->
+        </div>
+        
+        <div class="mg-instructions" id="mg-instructions">
+            Instructions go here...
         </div>
     </div>
 </div>

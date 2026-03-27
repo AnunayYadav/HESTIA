@@ -7,18 +7,27 @@ class GameEngine {
         this.speed = 1;
         this.selectedSpecialist = null;
         this.selectedRegion = null;
-        this.activeEvents = [];
         this.eventLog = [];
         this.gameOver = false;
+        
         this.regions = JSON.parse(JSON.stringify(REGIONS));
-        this.specialists = JSON.parse(JSON.stringify(SPECIALISTS));
+        this.specialists = JSON.parse(JSON.stringify(SPECIALISTS)); // This line was duplicated in the diff, keeping the original JSON.parse version.
+        this.activeEvents = []; // This was also duplicated, keeping the original.
+        this.predictions = []; // New
+        this.globalStats = { pollution: 40, health: 60, economy: 60, stability: 60, sustainability: 45 }; // New
+        this.resources = { budget: 1000, power: 500, influence: 300 }; // Updated values
+        this.sdgProgress = 0; // New
+        
+        this.chatState = { // New
+            activeChar: null,
+            history: []
+        };
         this.introPhase = true;
         this.introIndex = 0;
         this.tutorialStep = 0;
         this.gameInterval = null;
         this.simProgress = 0;
         this.simDate = new Date(2024, 0, 1);
-        this.resources = { budget: 500, power: 100, influence: 50 };
         this.currentMinigame = null;
         
         // Track previous state for interactive dashboard animations
@@ -271,23 +280,23 @@ class GameEngine {
         
         // Resources
         const resMap = {
-            'res-money': { val: this.resources.budget, prev: this.prevResources.budget },
-            'res-power': { val: this.resources.power, prev: this.prevResources.power },
-            'res-food': { val: this.resources.influence, prev: this.prevResources.influence }
+            'res-money-val': { val: this.resources.budget, prev: this.prevResources.budget, parent: 'res-money' },
+            'res-power-val': { val: this.resources.power, prev: this.prevResources.power, parent: 'res-power' },
+            'res-food-val': { val: this.resources.influence, prev: this.prevResources.influence, parent: 'res-food' }
         };
 
         Object.entries(resMap).forEach(([id, data]) => {
             const el = document.getElementById(id);
-            const valEl = el.querySelector('.res-val span') || el.querySelector('#'+id);
-            if (valEl) {
-                if (immediate) valEl.textContent = data.val;
-                else this.animateValue(valEl, data.prev, data.val, 800);
+            if (el) {
+                if (immediate) el.textContent = data.val;
+                else this.animateValue(el, data.prev, data.val, 800);
             }
             
-            if (data.val !== data.prev) {
+            const parent = document.getElementById(data.parent);
+            if (parent && data.val !== data.prev) {
                 const diffClass = data.val > data.prev ? 'res-update-up' : 'res-update-down';
-                el.classList.add(diffClass);
-                setTimeout(() => el.classList.remove(diffClass), 1000);
+                parent.classList.add(diffClass);
+                setTimeout(() => parent.classList.remove(diffClass), 1000);
             }
         });
         this.prevResources = { ...this.resources };
@@ -406,10 +415,90 @@ class GameEngine {
             costsRow.appendChild(item);
         });
 
-        // HIDE SELECT BUTTON (as requested: info only from sidebar)
-        document.getElementById('sm-select-btn').style.display = 'none';
+        // Setup Buttons
+        document.getElementById('sm-deploy-btn').onclick = () => {
+            this.closeSpecModal();
+            this.prepareDeployment(s);
+        };
+        document.getElementById('sm-chat-btn').onclick = () => {
+            this.openChat(s);
+        };
 
         document.getElementById('spec-modal-overlay').classList.add('visible');
+    }
+
+    // ========== CHARACTER CHAT (GEMINI) ==========
+    openChat(spec) {
+        this.chatState.activeChar = spec;
+        this.chatState.history = []; 
+        
+        document.getElementById('chat-overlay').style.display = 'flex';
+        document.getElementById('chat-name').textContent = spec.name;
+        document.getElementById('chat-portrait').src = spec.img;
+        document.getElementById('chat-messages').innerHTML = '';
+        
+        this.addChatMessage('char', `Secure channel established. Commander, this is ${spec.name}. How can I assist with the global strategy?`);
+    }
+
+    closeChat() {
+        document.getElementById('chat-overlay').style.display = 'none';
+        this.chatState.activeChar = null;
+    }
+
+    addChatMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `msg ${sender === 'char' ? 'msg-char' : 'msg-user'}`;
+        msgDiv.textContent = text;
+        const container = document.getElementById('chat-messages');
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text || !this.chatState.activeChar) return;
+
+        this.addChatMessage('user', text);
+        input.value = '';
+
+        try {
+            const personaPrompt = this.getPersonaPrompt(this.chatState.activeChar);
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    specialistName: this.chatState.activeChar.name,
+                    role: this.chatState.activeChar.role,
+                    persona: personaPrompt,
+                    message: text
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                this.addChatMessage('char', `[COMMS DISRUPTED: ${data.error}]`);
+                return;
+            }
+
+            this.addChatMessage('char', data.text);
+        } catch (err) {
+            this.addChatMessage('char', "[SIGNAL LOST: Neural bridge offline. Ensure the Vercel function is active.]");
+            console.error(err);
+        }
+    }
+
+    getPersonaPrompt(spec) {
+        const personas = {
+            health: "You are Vita, a dedicated medical expert. You are calm, empathetic but ruthlessly pragmatic when it comes to containing outbreaks. You view the world as a patient that needs stabilization.",
+            economist: "You are Delta and Sigma, a duo of brilliant economists. You often finish each other's thoughts. You speak in terms of market efficiency, capital flow, and financial equilibrium. Delta is more analytical, Sigma is more cautious.",
+            war: "You are Virdis, a battle-hardened War Commander with a high battle IQ. You are stoic and terse. You hate war and see it as a failure, but you will execute tactical strikes with absolute precision if needed.",
+            scientist: "You are Celsius, the Head Scientist. You are socially awkward, brilliant, and obsessed with research. You might ignore social cues or human emotions in favor of pure data and technological potential.",
+            diplomat: "You are Carmine, a Social Reformer and former noble. You are haughty but deeply protective of the common people. You speak with elegance and have a frighteningly deep understanding of human psychology and societal structures.",
+            environment: "You are Maris, an expert Ecologist. You are grounded, focused on the planetary balance. You speak about biological systems, pollution cycles, and the long-term sustainability of the biosphere."
+        };
+        return personas[spec.id] || "You are a professional advisor to the World Government.";
     }
 
     closeSpecModal() {
@@ -713,7 +802,7 @@ class GameEngine {
         if (p.includes('Manager/Neutral Sprite')) return p.replace('Neutral Sprite', 'Talking Sprite');
         if (p.includes('Medical Expert (Vita)/Neutral State')) return p.replace('Neutral State', 'Talking State');
         if (p.includes('Social Reformer (Carmine)/Neutral State')) return p.replace('Neutral State', 'Talk State');
-        if (p.includes('Virdis)/Neutral Sprite.png')) return p.replace('Neutral Sprite.png', 'Neutral Talk Sprite.jpg');
+        if (p.includes('Virdis)/Neutral Sprite.png')) return p.replace('Neutral Sprite.png', 'Neutral Talk Sprite.png');
         if (p.includes('Delta Neutral Sprite.png')) return p.replace('Neutral', 'Talk');
         if (p.includes('Sigma Neutral Sprite.png')) return p.replace('Neutral', 'Talk');
         if (p.includes('Generic NPC #1/Neutral Sprite')) return p.replace('Neutral Sprite', 'Neutral Talking Sprite');
@@ -732,7 +821,7 @@ class GameEngine {
         }
 
         this.narrative.neutralSprite = step.sprite;
-        this.narrative.talkingSprite = this.getTalkingSprite(step.sprite);
+        this.narrative.talkingSprite = step.talkingSprite || this.getTalkingSprite(step.sprite);
         this.narrative.talkingFlip = false;
 
         this.updateCharacterStage(step.sprite);
@@ -909,7 +998,6 @@ class GameEngine {
             if (isAvailable) {
                 card.onclick = () => {
                     this.handleSpecialistIntervention(ev, s);
-                    this.endNarrative();
                 };
             }
             grid.appendChild(card);
@@ -984,33 +1072,46 @@ class GameEngine {
         // Put on cooldown
         s.cooldown = s.cooldownMax;
         
+        // Close modal and start VN + MiniGame
+        this.closeSpecModal();
+        this.startSpecialistEvent(ev, s);
+    }
+
+    async startSpecialistEvent(ev, s) {
         const region = this.regions.find(r => r.id === ev.regionId);
-        const isMatch = ev.recommendedSpec === s.id;
-        const regionName = region ? region.name : 'Global';
+        const regionName = region ? region.name : 'Sector';
+        
+        this.narrative.active = true;
+        this.narrative.currentEvent = ev;
+        this.narrative.currentStep = 0;
+        this.narrative.neutralSprite = s.img;
+        this.narrative.talkingSprite = s.talkImg;
+        
+        this.narrative.queue = [
+            { name: s.name, text: `Commander, the situation in ${regionName} is critical. I'm ready to execute the ${s.specialty} protocol.`, sprite: s.img, talkingSprite: s.talkImg },
+            { name: s.name, text: `I'll handle the technical stabilization. Just follow my lead.`, sprite: s.img, talkingSprite: s.talkImg }
+        ];
 
-        if (isMatch) {
-            this.showToast('success', `Expert Intervention! ${s.name} resolved the crisis perfectly.`);
-            // Apply bonus stat boosts from specialist
-            if (region && region.stats) {
-                Object.entries(s.statBoost).forEach(([k, v]) => {
-                    region.stats[k] = this.clamp(region.stats[k] + v * 1.5);
-                });
+        document.getElementById('dialogue-overlay').classList.add('visible');
+        document.getElementById('choice-container').style.display = 'none';
+        this.processNarrativeStep();
+        
+        // Override advance logic for this special event
+        const originalAdvance = this.advanceNarrative;
+        this.advanceNarrative = () => {
+            if (this.narrative.isTyping) {
+                this.finishTyping();
+                return;
             }
-            this.addLog(`SUCCESS: ${s.name} resolved ${ev.title} in ${regionName}`);
-        } else {
-            this.showToast('danger', `Mismatched Roles! ${s.name} is not trained for this crisis. Downfall triggered.`);
-            if (region && region.stats) {
-                region.stats.economy = this.clamp(region.stats.economy - 15);
-                region.stats.stability = this.clamp(region.stats.stability - 20);
-                region.stats.health = this.clamp(region.stats.health - 5);
+            this.narrative.currentStep++;
+            if (this.narrative.currentStep < this.narrative.queue.length) {
+                this.processNarrativeStep();
+            } else {
+                // Done with VN, start mini-game
+                this.advanceNarrative = originalAdvance; // RESTORE
+                this.initMiniGame(ev, s);
             }
-            this.addLog(`FAILURE: ${s.name} failed to handle ${ev.title}. Downfall triggered.`);
-        }
-
-        // Remove event and close UI
-        this.activeEvents = this.activeEvents.filter(e => String(e.id) !== String(ev.id));
-        this.closeDecision();
-        this.updateAllUI();
+        };
     }
 
     handleDecision(ev, opt) {
@@ -1021,13 +1122,8 @@ class GameEngine {
             this.resources.power -= (opt.cost.power || 0);
         }
         
-        if (opt.minigame) {
-            this.closeDecision();
-            this.startMinigame(opt.minigame, ev, opt);
-        } else {
-            this.applyDecisionEffects(ev, opt);
-            this.closeDecision();
-        }
+        this.applyDecisionEffects(ev, opt);
+        this.closeDecision();
     }
 
     applyDecisionEffects(ev, opt, success = true) {
@@ -1037,125 +1133,440 @@ class GameEngine {
                 const mod = success ? v : Math.floor(v/3);
                 r.stats[k] = this.clamp(r.stats[k] + mod);
             });
-            if (success) r.crisis = null;
+            if (success) {
+                r.crisis = null;
+                this.activeEvents = this.activeEvents.filter(e => String(e.id) !== String(ev.id));
+            }
         }
-
-        if (success) {
-            this.showToast('success', 'Crisis mitigated!');
-        }
-        this.activeEvents = this.activeEvents.filter(e => String(e.id) !== String(ev.id));
         this.updateAllUI();
     }
 
-    // ---- MINI-GAMES ----
-    startMinigame(type, event, option) {
+    // ---- COMPREHENSIVE MINI-GAME ENGINE ----
+    initMiniGame(ev, s) {
         const overlay = document.getElementById('minigame-overlay');
-        overlay.classList.add('visible');
-        const container = document.getElementById('mg-canvas');
-        container.innerHTML = '';
-        this.currentMinigame = { type, event, option, score: 0, timeLeft: 10 };
+        const canvas = document.getElementById('mg-canvas-container');
         
-        if (type === 'epidemic') {
-            document.getElementById('mg-title').textContent = 'STOP THE SPREAD';
-            document.getElementById('mg-desc').textContent = 'Click all infected (RED) nodes before time runs out!';
-            for (let i=0; i<8; i++) {
-                const node = document.createElement('div');
-                node.className = 'node-btn infected';
-                node.style.left = 10 + Math.random()*80 + '%';
-                node.style.top = 10 + Math.random()*80 + '%';
-                node.onclick = () => { node.remove(); this.currentMinigame.score++; };
-                container.appendChild(node);
-            }
-        } else if (type === 'economy') {
-            document.getElementById('mg-title').textContent = 'ECONOMIC EQUILIBRIUM';
-            document.getElementById('mg-desc').textContent = 'Balance the sliders to reach exactly 100 points.';
-            const ui = document.getElementById('mg-ui');
-            ui.innerHTML = `
-                <div class="slider-group"><label>Tax Rate</label><input type="range" class="mg-slider" id="s1" value="30"></div>
-                <div class="slider-group"><label>Welfare</label><input type="range" class="mg-slider" id="s2" value="30"></div>
-            `;
-        } else if (type === 'conflict') {
-            document.getElementById('mg-title').textContent = 'PEACE NEGOTIATIONS';
-            document.getElementById('mg-desc').textContent = 'Form the correct sequence: Click the nodes in ascending order (1 to 5)!';
-            for (let i=1; i<=5; i++) {
-                const btn = document.createElement('div');
-                btn.className = 'node-btn';
-                btn.style.left = 10 + Math.random()*80 + '%';
-                btn.style.top = 10 + Math.random()*80 + '%';
-                btn.textContent = i;
-                btn.style.display = 'flex';
-                btn.style.alignItems = 'center';
-                btn.style.justifyContent = 'center';
-                btn.style.fontWeight = 'bold';
-                btn.onclick = () => { 
-                    if (i === this.currentMinigame.score + 1) {
-                        btn.style.backgroundColor = 'var(--accent-green)';
-                        this.currentMinigame.score++;
-                    }
-                };
-                container.appendChild(btn);
-            }
-        } else if (type === 'sustainability') {
-            document.getElementById('mg-title').textContent = 'POLLUTION CLEANUP';
-            document.getElementById('mg-desc').textContent = 'Collect pollution sources (🏭), avoid trees (🌳)! Score 5 points to win.';
-            for (let i=0; i<12; i++) {
-                const isPollution = i < 7;
-                const node = document.createElement('div');
-                node.className = 'node-btn';
-                node.style.left = 10 + Math.random()*80 + '%';
-                node.style.top = 10 + Math.random()*80 + '%';
-                node.style.backgroundColor = 'transparent';
-                node.style.border = 'none';
-                node.style.fontSize = '1.8rem';
-                node.textContent = isPollution ? '🏭' : '🌳';
-                node.onclick = () => {
-                    node.style.display = 'none';
-                    if (isPollution) {
-                        this.currentMinigame.score++;
-                    } else {
-                        this.currentMinigame.score -= 2;
-                    }
-                };
-                container.appendChild(node);
-            }
-        }
+        overlay.style.display = 'flex';
+        overlay.classList.add('visible');
+        canvas.innerHTML = '';
+        
+        // Ensure character stays visible and hide Choice indicator
+        document.getElementById('dialogue-overlay').classList.add('visible');
+        document.getElementById('choice-container').style.display = 'none';
+        document.getElementById('next-indicator').style.display = 'none';
+        document.getElementById('mg-instructions').style.visibility = 'visible';
+        
+        this.currentMinigame = {
+            event: ev,
+            specialist: s,
+            score: 0,
+            timeLeft: 15,
+            active: true,
+            timer: null,
+            commentInterval: null
+        };
 
-        const timer = setInterval(() => {
+        // UI Setup
+        document.getElementById('mg-title').textContent = s.specialty.toUpperCase();
+        document.getElementById('mg-timer').textContent = this.currentMinigame.timeLeft;
+
+        // Route to specific game (Update instructions first)
+        if (s.id === 'environment') this.runPlantOrPollute();
+        else if (s.id === 'scientist') this.runConnectPower();
+        else if (['health', 'war', 'diplomat'].includes(s.id)) this.runOrderingGame();
+        else if (s.id === 'economist') this.runStabilizerGame();
+        else this.runStabilizerGame();
+
+        // Start Commentary System (Now includes updated instructions)
+        const introText = document.getElementById('mg-instructions').textContent || "Lead the way, Commander.";
+        this.typeText(`OP: ${introText}`);
+        
+        const genericComments = [
+            "Keep it steady, Commander!",
+            "We're making progress. Don't stop now!",
+            "Precision is everything here.",
+            "The world is watching our response.",
+            "Almost there! Just a few more!"
+        ];
+
+        this.currentMinigame.commentInterval = setInterval(() => {
+            if (!this.currentMinigame.active) return;
+            const msg = genericComments[Math.floor(Math.random() * genericComments.length)];
+            this.typeText(msg);
+        }, 6000); 
+
+        // Start Timer
+        this.currentMinigame.timer = setInterval(() => {
             this.currentMinigame.timeLeft--;
-            document.getElementById('mg-timer').textContent = this.currentMinigame.timeLeft + 's';
+            document.getElementById('mg-timer').textContent = this.currentMinigame.timeLeft;
+            
             if (this.currentMinigame.timeLeft <= 0) {
-                clearInterval(timer);
-                this.finishMinigame();
+                this.finishMiniGame(false);
             }
         }, 1000);
-
-        document.getElementById('mg-submit').onclick = () => { clearInterval(timer); this.finishMinigame(); };
     }
 
-    finishMinigame() {
-        const mg = this.currentMinigame;
-        let success = false;
-        if (mg.type === 'epidemic') success = document.getElementById('mg-canvas').children.length === 0;
-        if (mg.type === 'economy') {
-            const v1 = parseInt(document.getElementById('s1').value);
-            const v2 = parseInt(document.getElementById('s2').value);
-            success = (v1 + v2 > 50 && v1 + v2 < 150);
-        }
-        if (mg.type === 'conflict') {
-            success = mg.score >= 5;
-        }
-        if (mg.type === 'sustainability') {
-            success = mg.score >= 5;
+    runPlantOrPollute() {
+        const container = document.getElementById('mg-canvas-container');
+        document.getElementById('mg-instructions').textContent = "TAP TREES 🌳 ONLY. AVOID FACTORIES 🏭.";
+        
+        const spawn = () => {
+            if (!this.currentMinigame.active) return;
+            const icon = document.createElement('div');
+            const isGood = Math.random() > 0.4;
+            icon.className = 'mg-falling-icon';
+            icon.textContent = isGood ? '🌳' : '🏭';
+            icon.style.left = Math.random() * 90 + '%';
+            icon.style.top = '-50px';
+            
+            icon.onclick = () => {
+                if (isGood) {
+                    this.currentMinigame.score++;
+                    icon.style.transform = 'scale(1.5)';
+                    icon.style.opacity = '0';
+                    if (this.currentMinigame.score >= 8) this.finishMiniGame(true);
+                } else {
+                    this.finishMiniGame(false);
+                }
+                setTimeout(() => icon.remove(), 200);
+            };
+
+            container.appendChild(icon);
+            
+            let pos = -50;
+            const fall = setInterval(() => {
+                pos += 3;
+                icon.style.top = pos + 'px';
+                if (pos > 350) {
+                    clearInterval(fall);
+                    icon.remove();
+                }
+                if (!this.currentMinigame.active) clearInterval(fall);
+            }, 20);
+            
+            setTimeout(spawn, 600);
+        };
+        spawn();
+    }
+
+    runConnectPower() {
+        const container = document.getElementById('mg-canvas-container');
+        document.getElementById('mg-instructions').textContent = "TAP TO ROTATE. ALIGN ALL TO VERTICAL (⬆️).";
+        
+        const grid = document.createElement('div');
+        grid.className = 'mg-wire-grid';
+        
+        const items = [];
+        for (let i=0; i<12; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'mg-wire-cell';
+            const rotation = Math.floor(Math.random() * 4) * 90;
+            cell.innerHTML = `<span class="mg-wire-icon" style="transform: rotate(${rotation}deg)">🔌</span>`;
+            
+            let currentRot = rotation;
+            cell.onclick = () => {
+                currentRot += 90;
+                cell.querySelector('.mg-wire-icon').style.transform = `rotate(${currentRot}deg)`;
+                checkWin();
+            };
+            
+            grid.appendChild(cell);
+            items.push({ cell, get rotation() { return currentRot % 180 === 0; } });
         }
         
-        document.getElementById('minigame-overlay').classList.remove('visible');
-        this.applyDecisionEffects(mg.event, mg.option, success);
-        this.showToast(success ? 'success' : 'warning', success ? 'MISSION SUCCESS!' : 'EFFORT FAILED');
+        const checkWin = () => {
+            if (items.every(item => item.rotation)) {
+                this.finishMiniGame(true);
+            }
+        };
+        
+        container.appendChild(grid);
+    }
+
+    runOrderingGame() {
+        const container = document.getElementById('mg-canvas-container');
+        const s = this.currentMinigame.specialist;
+        
+        let steps = [];
+        if (s.id === 'health') {
+            document.getElementById('mg-instructions').textContent = "PHARMACEUTICAL PROTOCOL: PREVENT -> TREAT -> PROTECT";
+            steps = [
+                { id: 1, text: "🚫 STOP GATHERINGS" },
+                { id: 2, text: "🚑 EMERGENCY TREATMENT" },
+                { id: 3, text: "💉 MASS VACCINATION" }
+            ];
+        } else if (s.id === 'war') {
+            document.getElementById('mg-instructions').textContent = "MILITARY STRATEGY: INTEL -> STRIKE -> SECURE";
+            steps = [
+                { id: 1, text: "📡 RECONNAISSANCE" },
+                { id: 2, text: "⚔️ PRECISION STRIKE" },
+                { id: 3, text: "🛡️ AREA SECURE" }
+            ];
+        } else if (s.id === 'diplomat') {
+            document.getElementById('mg-instructions').textContent = "DIPLOMATIC DE-ESCALATION: HALT -> DIALOGUE -> ACCORD";
+            steps = [
+                { id: 1, text: "🛑 CEASEFIRE ORDER" },
+                { id: 2, text: "🤝 RECONCILIATION TALKS" },
+                { id: 3, text: "✍️ PEACE TREATY" }
+            ];
+        } else {
+            document.getElementById('mg-instructions').textContent = "STRATEGIC DEPLOYMENT: INTEL -> STRIKE -> SECURE";
+            steps = [
+                { id: 1, text: "📡 RECONNAISSANCE" },
+                { id: 2, text: "⚔️ PRECISION STRIKE" },
+                { id: 3, text: "🛡️ AREA SECURE" }
+            ];
+        }
+
+        const list = document.createElement('div');
+        list.className = 'mg-order-list';
+        
+        // Shuffle (Ensuring it's not already solved)
+        let shuffled = [...steps].sort(() => Math.random() - 0.5);
+        while (shuffled.every((s, i) => s.id === steps[i].id)) {
+            shuffled = [...steps].sort(() => Math.random() - 0.5);
+        }
+        
+        shuffled.forEach((step) => {
+            const item = document.createElement('div');
+            item.className = 'mg-order-item';
+            item.draggable = true;
+            item.innerHTML = `<span class="handle">☰</span> ${step.text}`;
+            item.dataset.id = step.id;
+            
+            // Drag events
+            item.addEventListener('dragstart', () => item.classList.add('dragging'));
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                this.checkOrdering(list, steps);
+            });
+
+            // Click to Swap Logic
+            item.onclick = () => {
+                if (!this.currentMinigame.activeItem) {
+                    this.currentMinigame.activeItem = item;
+                    item.classList.add('mg-item-selected');
+                } else if (this.currentMinigame.activeItem === item) {
+                    this.currentMinigame.activeItem.classList.remove('mg-item-selected');
+                    this.currentMinigame.activeItem = null;
+                } else {
+                    const node1 = this.currentMinigame.activeItem;
+                    const node2 = item;
+                    const placeholder = document.createElement('div');
+                    node1.parentNode.insertBefore(placeholder, node1);
+                    node2.parentNode.insertBefore(node1, node2);
+                    placeholder.parentNode.insertBefore(node2, placeholder);
+                    placeholder.parentNode.removeChild(placeholder);
+                    node1.classList.remove('mg-item-selected');
+                    this.currentMinigame.activeItem = null;
+                    this.checkOrdering(list, steps);
+                }
+            };
+            list.appendChild(item);
+        });
+
+        list.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const dragging = document.querySelector('.dragging');
+            if (!dragging) return;
+            const afterElement = [...list.querySelectorAll('.mg-order-item:not(.dragging)')].reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = e.clientY - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) return { offset, element: child };
+                return closest;
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+            if (afterElement == null) list.appendChild(dragging);
+            else list.insertBefore(dragging, afterElement);
+        });
+
+        container.appendChild(list);
+    }
+
+    checkOrdering(list, correctSteps) {
+        const currentIds = Array.from(list.children).map(i => parseInt(i.dataset.id));
+        const correctCount = currentIds.filter((id, idx) => id === correctSteps[idx].id).length;
+        const total = currentIds.length;
+        const incorrectCount = total - correctCount;
+        const s = this.currentMinigame.specialist;
+
+        // Visual highlight for individual correct items? (Optional, but let's do group success first)
+        
+        if (correctCount === total) {
+            // Success State
+            Array.from(list.children).forEach(it => {
+                it.classList.add('mg-item-success');
+                it.style.pointerEvents = 'none';
+            });
+            this.renderDialogue(s.name, `PERFECT! ALL ${total} STEPS SYNCHRONIZED.`, s.img, s.talkImg);
+            setTimeout(() => this.finishMiniGame(true), 1500);
+        } else {
+            // Progress feedback
+            if (correctCount > 0) {
+                this.renderDialogue(s.name, `${correctCount} correct, ${incorrectCount} incorrect. Rearrange the protocol!`, s.img, s.talkImg);
+            } else {
+                this.renderDialogue(s.name, "none of these are in the right order yet. rethink the sequence!", s.img, s.talkImg);
+            }
+        }
+    }
+
+    runStabilizerGame() {
+        const container = document.getElementById('mg-canvas-container');
+        document.getElementById('mg-instructions').textContent = "STABILIZE THE GRAPH. KEEP CURSOR IN NEUTRAL ZONE.";
+        const ui = document.createElement('div');
+        ui.className = 'mg-stabilizer-ui';
+        ui.innerHTML = `
+            <div class="mg-graph-area"><div class="mg-target-line"></div><div id="mg-active-line" class="mg-current-line" style="top: 50%"></div></div>
+            <input type="range" id="mg-stab-input" style="width:100%" value="50">
+        `;
+        container.appendChild(ui);
+        const line = ui.querySelector('#mg-active-line');
+        const input = ui.querySelector('#mg-stab-input');
+        let drift = 0;
+        let scoreNeeded = 100;
+        let currentScore = 0;
+
+        const loop = setInterval(() => {
+            if (!this.currentMinigame.active) { clearInterval(loop); return; }
+            drift += (Math.random() - 0.5) * 5;
+            const pos = parseInt(input.value) + drift;
+            line.style.top = Math.max(0, Math.min(100, pos)) + '%';
+            if (pos > 40 && pos < 60) {
+                currentScore++;
+                line.style.background = 'var(--accent-cyan)';
+            } else {
+                line.style.background = '#ff4757';
+            }
+            if (currentScore >= scoreNeeded) {
+                clearInterval(loop);
+                this.finishMiniGame(true);
+            }
+        }, 50);
+    }
+
+    finishMiniGame(success) {
+        if (!this.currentMinigame.active) return;
+        this.currentMinigame.active = false;
+        clearInterval(this.currentMinigame.timer);
+        if (this.currentMinigame.commentInterval) clearInterval(this.currentMinigame.commentInterval);
+
+        // Hide mini-game overlay immediately
+        const mgOverlay = document.getElementById('minigame-overlay');
+        mgOverlay.classList.remove('visible');
+        
+        setTimeout(() => {
+            mgOverlay.style.display = 'none';
+            this.showPostGameDialogue(success);
+        }, 500);
+    }
+
+    showPostGameDialogue(success) {
+        const ev = this.currentMinigame.event;
+        const s = this.currentMinigame.specialist;
+        const region = this.regions.find(r => r.id === ev.regionId);
+        const regionName = region ? region.name : 'the sector';
+
+        // Calculate impact summary for dialogue
+        const baseEffects = ev.options[0].effects;
+        const isMatch = (ev.recommendedSpec && s.id === ev.recommendedSpec) || 
+                       (s.role && ev.type && s.role.toLowerCase().includes(ev.type.toLowerCase()));
+        const multiplier = isMatch ? 2.0 : 1.0;
+        const finalMult = success ? multiplier : 0.3;
+        
+        let impacts = Object.entries(baseEffects).map(([stat, val]) => {
+            const change = Math.round(val * finalMult);
+            const label = stat.charAt(0).toUpperCase() + stat.slice(1);
+            return `${label} ${change >= 0 ? '+' : ''}${change}%`;
+        }).join(', ');
+
+        const statusLine = success ? "MISSION SUCCESSFUL" : "MISSION FAILED";
+        const introLine = success 
+            ? `Commander, the ${s.specialty} operation in ${regionName} was a complete success.`
+            : `I'm afraid the intervention was insufficient, Commander. The crisis in ${regionName} continues.`;
+        
+        const consequenceLine = success
+            ? `Our actions resulted in significant shifts: ${impacts}. A necessary step for the Global Goals.`
+            : `Minimal influence achieved: ${impacts}. We must rethink our strategic approach.`;
+
+        const learningLine = ev.learningFact || 'Every action in the Aegis has a global ripple effect.';
+
+        // Build Narrative Queue
+        this.narrative.queue = [
+            { name: s.name, text: statusLine, sprite: s.img, talkingSprite: s.talkImg },
+            { name: s.name, text: introLine, sprite: s.img, talkingSprite: s.talkImg },
+            { name: s.name, text: consequenceLine, sprite: s.img, talkingSprite: s.talkImg },
+            { name: 'HESTIA [INTELLIGENCE]', text: `LESSON: ${learningLine}`, sprite: 'Character/Hestia/Neutral Sprite.png', talkingSprite: 'Character/Hestia/Neutral Talk Sprite.png' }
+        ];
+
+        // Activate Dialogue Overlay
+        document.getElementById('dialogue-overlay').classList.add('visible');
+        document.getElementById('choice-container').style.display = 'none';
+        this.narrative.currentStep = 0;
+        this.processNarrativeStep();
+
+        // Override advance logic for post-game
+        const originalAdvance = this.advanceNarrative;
+        this.advanceNarrative = () => {
+            if (this.narrative.isTyping) {
+                this.finishTyping();
+                return;
+            }
+            this.narrative.currentStep++;
+            if (this.narrative.currentStep < this.narrative.queue.length) {
+                this.processNarrativeStep();
+            } else {
+                // Done with post-game narrative
+                this.advanceNarrative = originalAdvance; // RESTORE
+                this.resolveSpecialistIntervention(ev, s, success);
+                this.endNarrative();
+            }
+        };
+    }
+
+    resolveSpecialistIntervention(ev, s, success) {
+        const region = this.regions.find(r => r.id === ev.regionId);
+        if (!region) return;
+        const baseEffects = ev.options[0].effects;
+        const isMatch = (ev.recommendedSpec && s.id === ev.recommendedSpec) || 
+                       (s.role && ev.type && s.role.toLowerCase().includes(ev.type.toLowerCase()));
+        const multiplier = isMatch ? 2.0 : 1.0;
+        const finalMult = success ? multiplier : 0.3;
+
+        Object.entries(baseEffects).forEach(([stat, value]) => {
+            const change = Math.round(value * finalMult);
+            region.stats[stat] = this.clamp(region.stats[stat] + change);
+        });
+
+        if (success) {
+            region.crisis = null;
+            this.activeEvents = this.activeEvents.filter(e => String(e.id) !== String(ev.id));
+            this.showToast('success', `${s.name} resolved the crisis!`);
+        } else {
+            this.showToast('warning', `${s.name}'s intervention failed.`);
+        }
+        this.updateAllUI();
+    }
+
+    animateValue(obj, start, end, duration) {
+        if (start === end) return;
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = Math.floor(progress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
     }
 
     // ---- HELPERS ----
     renderEffects(eff) {
-        return Object.entries(eff).map(([k,v]) => `<span class="effect-tag ${v>=0?'positive':'negative'}">${k.toUpperCase()} ${v>=0?'+'+v:v}</span>`).join('');
+        const labels = { budget: 'World Bank', power: 'Energy', influence: 'Influence' };
+        return Object.entries(eff).map(([k,v]) => {
+            const label = labels[k] || k.toUpperCase();
+            return `<span class="effect-tag ${v>=0?'positive':'negative'}">${label} ${v>=0?'+'+v:v}</span>`;
+        }).join('');
     }
     clamp(v) { return Math.max(0, Math.min(100, Math.round(v))); }
     getGlobalStats() {
