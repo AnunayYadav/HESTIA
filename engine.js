@@ -471,17 +471,22 @@ class GameEngine {
                 })
             });
 
-            const data = await response.json();
-            
-            if (data.error) {
-                this.addChatMessage('char', `[COMMS DISRUPTED: ${data.error}]`);
+            if (!response.ok) {
+                const errText = await response.text();
+                let errMsg = "Neural bridge disruption.";
+                try {
+                    const errObj = JSON.parse(errText);
+                    errMsg = errObj.error || errMsg;
+                } catch(e) { /* use default */ }
+                this.addChatMessage('char', `[COMMS DISRUPTED: ${errMsg}]`);
                 return;
             }
 
-            this.addChatMessage('char', data.text);
+            const data = await response.json();
+            this.addChatMessage('char', data.text || "No signal detected.");
         } catch (err) {
             this.addChatMessage('char', "[SIGNAL LOST: Neural bridge offline. Ensure the Vercel function is active.]");
-            console.error(err);
+            console.error('Frontend Chat Error:', err);
         }
     }
 

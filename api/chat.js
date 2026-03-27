@@ -1,19 +1,25 @@
-const fetch = require('node-fetch');
+// api/chat.js
+// Vercel Serverless Function correctly utilizing global fetch (No dependencies needed)
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+        res.setHeader('Allow', ['POST']);
+        return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 
-    const { persona, message, specialistName, role } = req.body;
+    const { persona, message, specialistName, role } = req.body || {};
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-        return res.status(500).json({ error: 'Gemini API key not configured in Vercel environment' });
+        return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in Vercel environment variables.' });
+    }
+
+    if (!message || !specialistName) {
+        return res.status(400).json({ error: 'Incomplete parameters: [message, specialistName] required.' });
     }
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -26,17 +32,22 @@ export default async function handler(req, res) {
             })
         });
 
-        const data = await response.json();
-        
-        if (data.error) {
-            console.error('Gemini API Error:', data.error);
-            return res.status(500).json({ error: 'Neural bridge disruption.', details: data.error.message });
+        if (!geminiResponse.ok) {
+            const errorText = await geminiResponse.text();
+            console.error('Gemini API Error Response:', errorText);
+            return res.status(502).json({ error: 'Neural bridge disruption in Gemini API.', details: errorText });
         }
 
-        const aiText = data.candidates[0].content.parts[0].text;
+        const data = await geminiResponse.json();
+        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!aiText) {
+            return res.status(502).json({ error: 'Neural bridge provided an empty signal.' });
+        }
+
         return res.status(200).json({ text: aiText });
     } catch (err) {
-        console.error('Server side error:', err);
-        return res.status(500).json({ error: 'Secure channel dropped unexpectedly.' });
+        console.error('Internal Server Error:', err);
+        return res.status(500).json({ error: 'Secure channel dropped unexpectedly during neural transfer.' });
     }
 }
