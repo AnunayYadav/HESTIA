@@ -416,10 +416,6 @@ class GameEngine {
         });
 
         // Setup Buttons
-        document.getElementById('sm-deploy-btn').onclick = () => {
-            this.closeSpecModal();
-            this.prepareDeployment(s);
-        };
         document.getElementById('sm-chat-btn').onclick = () => {
             this.openChat(s);
         };
