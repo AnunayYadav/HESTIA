@@ -1,0 +1,13 @@
+{
+  "name": "hestia-strategy-simulation",
+  "version": "1.0.0",
+  "description": "Global strategy simulation for restorating world balance.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [],
+  "author": "Antigravity",
+  "license": "ISC"
+}

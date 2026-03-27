@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Aegis of Balance - An interactive global strategy simulation where you restore a collapsing world as the Controller of the World Government.">
+    <title>Aegis of Balance — Global Strategy Simulation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ========== INTRO SCREEN ========== -->
+<div id="intro-screen" class="intro-screen">
+    <div class="intro-bg-particles"></div>
+    
+    <div id="intro-character-stage" class="intro-character-stage">
+        <!-- Character sprite injected here by engine -->
+    </div>
+
+    <div class="intro-content">
+        <div class="intro-dialogue-container">
+            <div class="intro-dialogue-box-wrapper">
+                <div class="name-tag">HESTIA</div>
+                <div class="dialogue-box" onclick="game.advanceIntro()">
+                    <div id="intro-text" class="intro-dialogue-text"></div>
+                    <div class="next-indicator" id="intro-next-indicator">▶</div>
+                </div>
+                <div class="controls-hint">Click to Continue • <span class="intro-skip-trigger" onclick="game.skipIntro()">Skip Intro</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== TUTORIAL OVERLAY ========== -->
+<div id="tutorial-overlay" class="tutorial-overlay">
+    <div class="tutorial-card">
+        <div class="tutorial-step-indicator">
+            <div class="tutorial-dot"></div>
+            <div class="tutorial-dot"></div>
+            <div class="tutorial-dot"></div>
+            <div class="tutorial-dot"></div>
+        </div>
+        <div class="tutorial-icon" id="tutorial-icon">🗺️</div>
+        <div class="tutorial-title" id="tutorial-title">The World Map</div>
+        <div class="tutorial-text" id="tutorial-text">...</div>
+        <div class="tutorial-nav">
+            <button class="tutorial-btn skip" onclick="game.skipTutorial()">SKIP</button>
+            <button class="tutorial-btn next" id="tutorial-next-btn" onclick="game.nextTutorial()">NEXT</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== DIALOGUE / VN OVERLAY ========== -->
+<div id="dialogue-overlay" class="dialogue-overlay">
+    <div id="dramatic-overlay" class="dramatic-overlay">
+        <div id="flash-effect" class="flash-effect" style="display:none"></div>
+        <div id="dramatic-text" class="dramatic-text"></div>
+    </div>
+
+    <div id="character-stage" class="character-stage">
+        <!-- Character sprites injected here -->
+    </div>
+
+    <div id="choice-container" class="choice-container" style="display:none">
+        <!-- Vertical choices injected here -->
+    </div>
+
+    <div class="dialogue-box-wrapper">
+        <div id="name-tag" class="name-tag">HESTIA</div>
+        <div class="dialogue-box" id="dialogue-box-trigger">
+            <div id="dialogue-text" class="dialogue-text">
+                Welcome, Commander. The world balance is in your hands.
+            </div>
+            <div class="next-indicator" id="next-indicator">▶</div>
+        </div>
+        <div class="controls-hint">Click or Space to Continue • ESC to Skip</div>
+    </div>
+</div>
+
+<!-- ========== GAME OVER ========== -->
+<div id="gameover-overlay" class="gameover-overlay">
+    <div class="gameover-content">
+        <div class="gameover-title" id="go-title">GAME OVER</div>
+        <div class="gameover-message" id="go-message">...</div>
+        <div class="gameover-stats">
+            <div class="gameover-stat"><div class="label">Turns Survived</div><div class="value" id="go-turns">0</div></div>
+            <div class="gameover-stat"><div class="label">SDG Score</div><div class="value" id="go-sdg">0%</div></div>
+        </div>
+        <button class="restart-btn" onclick="game.restart()">TRY AGAIN</button>
+    </div>
+</div>
+
+<!-- ========== TOAST CONTAINER ========== -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- ========== MAIN GAME ========== -->
+<div id="game-container">
+    <!-- LEFT PANEL (FULL HEIGHT) -->
+    <div class="left-panel">
+        <div class="panel-section">
+            <div class="panel-section-title">Specialists</div>
+            <div id="specialist-list"></div>
+        </div>
+        
+        <!-- SIDEBAR CONTROLS -->
+        <div class="sidebar-controls">
+            <div class="sim-speed-group">
+                <button class="sim-speed-btn" id="sim-pause" onclick="game.setSpeed(0)" title="Pause Simulation">⏸</button>
+                <button class="sim-speed-btn active" id="sim-speed-1" onclick="game.setSpeed(1)" title="Normal Speed">▶</button>
+                <button class="sim-speed-btn" id="sim-speed-2" onclick="game.setSpeed(2)" title="Fast Speed">▶▶</button>
+                <button class="sim-speed-btn" id="sim-speed-3" onclick="game.setSpeed(3)" title="Ultra Speed">▶▶▶</button>
+            </div>
+            <div class="sim-time-panel">
+                <div class="sim-progress-container">
+                    <div class="sim-progress-fill" id="sim-progress-fill"></div>
+                </div>
+                <div class="sim-date" id="sim-date">January 1, 2024</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CENTER AREA -->
+    <div class="center-content">
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+
+            </div>
+            <div class="top-bar-center">
+                <div class="game-title">AEGIS OF BALANCE</div>
+            </div>
+            <div class="top-bar-right">
+                <!-- Dashboard shifted to Right Panel -->
+            </div>
+        </div>
+
+        <!-- MAP AREA -->
+        <div class="map-area" onclick="game.closeRegionInfo()">
+            <div class="map-wrapper" id="map-wrapper">
+                <img class="map-image" src="map.jpg" alt="World Map">
+            </div>
+            <!-- Region Info Overlay -->
+            <div class="region-info-overlay" id="region-info" onclick="event.stopPropagation()">
+                <div class="region-info-header">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div>
+                            <div class="region-info-title" id="ri-name">Region Name</div>
+                            <div class="region-info-leader" id="ri-leader">Leader Name</div>
+                        </div>
+                    </div>
+                    <span class="region-info-gov" id="ri-gov">DEMOCRATIC</span>
+                    <button class="region-info-close" onclick="game.closeRegionInfo()">✕</button>
+                </div>
+                <div class="region-leader-personality" id="ri-personality">Personality...</div>
+                <div class="region-stats-grid">
+                    <div class="region-stat-item">
+                        <div class="region-stat-label">Pollution</div>
+                        <div class="region-stat-value" id="ri-pollution-val">0</div>
+                        <div class="region-stat-bar"><div class="fill" id="ri-pollution-bar"></div></div>
+                    </div>
+                    <div class="region-stat-item">
+                        <div class="region-stat-label">Health</div>
+                        <div class="region-stat-value" id="ri-health-val">0</div>
+                        <div class="region-stat-bar"><div class="fill" id="ri-health-bar"></div></div>
+                    </div>
+                    <div class="region-stat-item">
+                        <div class="region-stat-label">Economy</div>
+                        <div class="region-stat-value" id="ri-economy-val">0</div>
+                        <div class="region-stat-bar"><div class="fill" id="ri-economy-bar"></div></div>
+                    </div>
+                    <div class="region-stat-item">
+                        <div class="region-stat-label">Stability</div>
+                        <div class="region-stat-value" id="ri-stability-val">0</div>
+                        <div class="region-stat-bar"><div class="fill" id="ri-stability-bar"></div></div>
+                    </div>
+                    <div class="region-stat-item">
+                        <div class="region-stat-label">Sustain.</div>
+                        <div class="region-stat-value" id="ri-sustainability-val">0</div>
+                        <div class="region-stat-bar"><div class="fill" id="ri-sustainability-bar"></div></div>
+                    </div>
+                </div>
+                <div class="region-info-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <div class="region-actions" id="ri-actions"></div>
+                    <button class="region-info-more-btn" id="ri-more-btn" title="View Detailed Dossier">→</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT PANEL (FULL HEIGHT) -->
+    <div class="right-panel">
+        <div class="panel-section dashboard-container">
+            <div class="panel-section-title">Global Dashboard</div>
+            <div class="resource-stack side-panel-res">
+                <div id="res-money" class="resource-item res-money" title="Global Budget">
+                    <span class="res-label">Money</span>
+                    <span class="res-val">💰 <span id="res-money-val">500</span>M</span>
+                </div>
+                <div id="res-power" class="resource-item res-power" title="Electricity Grid">
+                    <span class="res-label">Electricity</span>
+                    <span class="res-val">⚡ <span id="res-power-val">100</span>%</span>
+                </div>
+                <div id="res-food" class="resource-item res-food" title="Food Supply">
+                    <span class="res-label">Food</span>
+                    <span class="res-val">🍞 <span id="res-food-val">50</span></span>
+                </div>
+                <div class="resource-divider"></div>
+                <div class="resource-item" title="Environmental Pollution">
+                    <span class="res-label">Pollution</span>
+                    <div class="res-bar-mini"><div class="fill" id="gs-pollution-bar" style="width:0%; background:var(--status-crisis)"></div></div>
+                    <span id="gs-pollution-val" class="res-val-mini">0</span>
+                </div>
+                <div class="resource-item" title="Public Health">
+                    <span class="res-label">Health</span>
+                    <div class="res-bar-mini"><div class="fill" id="gs-health-bar" style="width:0%; background:var(--accent-green)"></div></div>
+                    <span id="gs-health-val" class="res-val-mini">0</span>
+                </div>
+                <div class="resource-item" title="Global Economy">
+                    <span class="res-label">Economy</span>
+                    <div class="res-bar-mini"><div class="fill" id="gs-economy-bar" style="width:0%; background:var(--accent-blue)"></div></div>
+                    <span id="gs-economy-val" class="res-val-mini">0</span>
+                </div>
+                <div class="resource-item" title="Overall SDG Progress">
+                    <span class="res-label">SDG Progress</span>
+                    <div class="res-bar-mini"><div class="fill" id="sdg-fill" style="width:0%; background:var(--accent-gold)"></div></div>
+                    <span id="sdg-value" class="res-val-mini">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-section" style="padding-bottom:8px">
+            <div class="panel-section-title">Active Events</div>
+        </div>
+        <div class="events-panel" id="events-list"></div>
+    </div>
+</div>
+
+<!-- ========== MINI-GAME MODAL ========== -->
+<div id="minigame-overlay" class="minigame-overlay">
+    <div class="minigame-container">
+        <h2 id="mg-title" class="game-title">Crisis Intervention</h2>
+        <p id="mg-desc">Solve the crisis immediately!</p>
+        <div id="mg-timer" class="minigame-timer">10s</div>
+        <div id="mg-canvas" class="minigame-canvas-area">
+            <!-- Game content injected here -->
+        </div>
+        <div id="mg-ui"></div>
+        <button id="mg-submit" class="next-turn-btn" style="width:100%; margin-top:10px">SUBMIT ACTION</button>
+    </div>
+</div>
+
+<!-- ========== SPECIALIST INFO MODAL ========== -->
+<div id="spec-modal-overlay" class="modal-overlay">
+    <div class="spec-modal-container">
+        <button class="modal-close" onclick="game.closeSpecModal()">&times;</button>
+        <div class="spec-modal-layout">
+            <div class="spec-modal-left">
+                <img id="sm-img" src="" alt="Specialist Portrait" class="sm-portrait">
+                <div id="sm-sdg" class="sm-sdg-tag"></div>
+            </div>
+            <div class="spec-modal-right">
+                <h2 id="sm-name" class="sm-name">Name</h2>
+                <div id="sm-role" class="sm-role">Role</div>
+                <div id="sm-specialty" class="sm-specialty-badge">Specialty</div>
+                
+                <p id="sm-desc" class="sm-description">Description goes here.</p>
+                
+                <div class="sm-stats-grid">
+                    <div class="sm-stats-section">
+                        <div class="sm-section-label">Pros</div>
+                        <ul id="sm-pros" class="sm-pros-list"></ul>
+                    </div>
+                    <div class="sm-stats-section">
+                        <div class="sm-section-label">Cons</div>
+                        <ul id="sm-cons" class="sm-cons-list"></ul>
+                    </div>
+                </div>
+
+                <div class="sm-costs-panel">
+                    <div class="sm-section-label">Deployment Costs</div>
+                    <div id="sm-costs" class="sm-costs-row"></div>
+                </div>
+
+                <button id="sm-select-btn" class="sm-action-btn">SELECT SPECIALIST</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Country Modal (Premium Dossier) -->
+<div id="detailed-country-modal" class="detailed-modal-overlay" onclick="game.closeDetailedModal()">
+    <div class="detailed-modal-content" onclick="event.stopPropagation()">
+        <button class="detailed-modal-close" onclick="game.closeDetailedModal()">✕</button>
+        <div class="detailed-modal-body">
+            <div class="detailed-modal-side">
+                <div class="detailed-flag-wrapper">
+                    <img id="dm-flag" src="" alt="National Flag">
+                </div>
+                <div class="detailed-leader-card">
+                    <small>HEAD OF STATE</small>
+                    <div id="dm-leader" class="value">...</div>
+                    <div id="dm-gov-detailed" class="sub-label">...</div>
+                </div>
+            </div>
+            <div class="detailed-modal-main">
+                <h1 id="dm-name" class="detailed-country-name">Country Name</h1>
+                <div class="detailed-stats-row">
+                    <div class="detailed-big-stat">
+                        <label>POPULATION</label>
+                        <div id="dm-pop" class="val">0</div>
+                    </div>
+                    <div class="detailed-big-stat">
+                        <label>GDP VALUATION</label>
+                        <div id="dm-gdp" class="val">$0</div>
+                    </div>
+                    <div class="detailed-big-stat">
+                        <label>GROWTH RATE</label>
+                        <div id="dm-growth" class="val">0%</div>
+                    </div>
+                </div>
+                <div class="detailed-dossier-box">
+                    <h3>REGIONAL DOSSIER</h3>
+                    <p id="dm-info">...</p>
+                </div>
+                <div class="detailed-sdg-focus">
+                    <div class="sdg-label">SDG ALIGNMENT TARGETS</div>
+                    <div class="sdg-tags">
+                        <span class="sdg-tag">SDG 8</span>
+                        <span class="sdg-tag">SDG 13</span>
+                        <span class="sdg-tag">SDG 16</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="gamedata.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>
