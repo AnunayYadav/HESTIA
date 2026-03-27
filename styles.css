@@ -531,10 +531,14 @@ html, body {
     color: #fff;
 }
 
+.sim-speed-btn:active {
+    transform: scale(0.92);
+}
+
 .sim-speed-btn.active {
     background: var(--accent-gold);
     color: #000;
-    box-shadow: 0 0 15px var(--accent-gold-dim);
+    box-shadow: 0 0 15px var(--accent-gold-dim), 0 0 30px rgba(212, 168, 83, 0.1);
 }
 
 .sim-speed-divider {
@@ -1115,6 +1119,10 @@ html, body {
     transform: translateY(-2px);
 }
 
+.event-respond-btn:active {
+    transform: translateY(1px) scale(0.98);
+}
+
 .event-card.severity-high {
     box-shadow: 0 0 15px rgba(255, 77, 77, 0.15);
     animation: pulse-high-severity 3s infinite ease-in-out, event-entry 0.5s ease-out forwards;
@@ -1494,8 +1502,13 @@ html, body {
     background: var(--accent-gold);
     color: #000;
     transform: scale(1.05);
-    box-shadow: 0 0 30px var(--accent-gold-dim);
+    box-shadow: 0 0 30px var(--accent-gold-dim), 0 10px 40px rgba(0,0,0,0.6);
     border-color: var(--accent-gold);
+}
+
+.choice-btn:active {
+    transform: scale(0.96);
+    filter: brightness(0.9);
 }
 
 /* Specialist VN Cards */
@@ -1517,9 +1530,13 @@ html, body {
 }
 
 .vn-spec-card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-8px) scale(1.02);
     border-color: var(--accent-gold);
-    box-shadow: 0 0 40px var(--accent-gold-dim);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.7), 0 0 20px rgba(212, 168, 83, 0.3);
+}
+
+.vn-spec-card:active {
+    transform: translateY(2px) scale(0.98);
 }
 
 .vn-spec-img-wrapper {
@@ -2182,6 +2199,11 @@ html, body {
 .sm-action-btn:hover {
     box-shadow: var(--shadow-glow-gold);
     transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.sm-action-btn:active {
+    transform: translateY(1px) scale(0.98);
 }
 
 .log-section {

@@ -261,10 +261,10 @@ class GameEngine {
     buildUI() {
         this.renderSpecialists();
         this.renderRegions();
-        this.updateAllUI();
+        this.updateAllUI(true); // first run immediate
     }
 
-    updateAllUI() {
+    updateAllUI(immediate = false) {
         this.renderSpecialists();
         this.renderRegions();
         this.renderEvents();
@@ -279,7 +279,10 @@ class GameEngine {
         Object.entries(resMap).forEach(([id, data]) => {
             const el = document.getElementById(id);
             const valEl = el.querySelector('.res-val span') || el.querySelector('#'+id);
-            if (valEl) valEl.textContent = data.val;
+            if (valEl) {
+                if (immediate) valEl.textContent = data.val;
+                else this.animateValue(valEl, data.prev, data.val, 800);
+            }
             
             if (data.val !== data.prev) {
                 const diffClass = data.val > data.prev ? 'res-update-up' : 'res-update-down';
@@ -292,7 +295,7 @@ class GameEngine {
         // Stats
         const gs = this.getGlobalStats();
         const sdg = this.getSDGScore();
-        document.getElementById('turn-counter').textContent = `Turn ${this.turn}/${this.maxTurns}`;
+// document.getElementById('turn-counter').textContent = `Turn ${this.turn}/${this.maxTurns}`;
         
         const statsMap = {
             'gs-pollution': { val: gs.pollution, prev: this.prevStats.pollution, isInverse: true },
@@ -306,7 +309,11 @@ class GameEngine {
             const valEl = document.getElementById(id + '-val') || document.getElementById(id + '-value');
             
             if (bar) bar.style.width = data.val + '%';
-            if (valEl) valEl.textContent = data.val + (id === 'sdg' ? '%' : '');
+            if (valEl) {
+                const suffix = id === 'sdg' ? '%' : '';
+                if (immediate) valEl.textContent = data.val + suffix;
+                else this.animateValue(valEl, data.prev, data.val, 800, suffix);
+            }
 
             if (data.val !== data.prev) {
                 const isBetter = data.isInverse ? data.val < data.prev : data.val > data.prev;
@@ -318,6 +325,25 @@ class GameEngine {
         });
 
         this.prevStats = { pollution: gs.pollution, health: gs.health, economy: gs.economy, progress: sdg };
+    }
+
+    animateValue(obj, start, end, duration, suffix = "") {
+        if (start === end) {
+            obj.textContent = end + suffix;
+            return;
+        }
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.textContent = Math.floor(progress * (end - start) + start) + suffix;
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                obj.textContent = end + suffix; // ensure exact final value
+            }
+        };
+        window.requestAnimationFrame(step);
     }
 
     renderSpecialists() {
@@ -374,7 +400,9 @@ class GameEngine {
         Object.entries(s.costs).forEach(([k, v]) => {
             const item = document.createElement('div');
             item.className = 'sm-cost-item';
-            item.innerHTML = `<span style="text-transform:capitalize">${k}</span>: <span class="sm-cost-val">${v}</span>`;
+            let unit = k === 'budget' ? 'B' : (k === 'power' ? 'P' : 'I');
+            let label = k === 'budget' ? 'World Bank' : (k === 'power' ? 'Energy' : 'Influence');
+            item.innerHTML = `<span style="text-transform:capitalize">${label}</span>: <span class="sm-cost-val">${k === 'budget' ? '$' : ''}${v}${unit}</span>`;
             costsRow.appendChild(item);
         });
 
@@ -432,9 +460,9 @@ class GameEngine {
         
         // Resource check
         const cost = s.costs;
-        if (cost.budget && this.resources.budget < cost.budget) { this.showToast('danger', 'Insufficient Budget!'); return; }
-        if (cost.power && this.resources.power < cost.power) { this.showToast('danger', 'Insufficient Power!'); return; }
-        if (cost.influence && this.resources.influence < cost.influence) { this.showToast('danger', 'Insufficient Influence!'); return; }
+        if (cost.budget && this.resources.budget < cost.budget) { this.showToast('danger', 'Insufficient World Bank Reserves!'); return; }
+        if (cost.power && this.resources.power < cost.power) { this.showToast('danger', 'Insufficient Energy Grid Capacity!'); return; }
+        if (cost.influence && this.resources.influence < cost.influence) { this.showToast('danger', 'Insufficient Global Influence!'); return; }
 
         if (s.condition === 'conflict' && !r.crisis) { this.showToast('warning', 'War Commander requires conflict!'); return; }
         if (s.condition === 'stable' && (r.stats.stability < 50)) { this.showToast('warning', 'Scientist requires stability!'); return; }
@@ -497,7 +525,7 @@ class GameEngine {
         const actionsEl = document.getElementById('ri-actions');
         actionsEl.innerHTML = '';
         const actions = [
-            { text: '💎 Aid (30B)', type: 'aid', cost:{budget:30}, effects:{health:10, economy:-5} },
+            { text: '💎 Foreign Aid ($30B)', type: 'aid', cost:{budget:30}, effects:{health:10, economy:-5} },
             { text: '⛔ Sanction (20P)', type: 'sanction', cost:{power:20}, effects:{stability:5, economy:-10} }
         ];
         actions.forEach(a => {
@@ -510,8 +538,8 @@ class GameEngine {
     }
 
     applyQuickAction(regionId, action) {
-        if (action.cost.budget && this.resources.budget < action.cost.budget) { this.showToast('danger', 'No Budget!'); return; }
-        if (action.cost.power && this.resources.power < action.cost.power) { this.showToast('danger', 'No Power!'); return; }
+        if (action.cost.budget && this.resources.budget < action.cost.budget) { this.showToast('danger', 'Insufficient World Bank Reserves!'); return; }
+        if (action.cost.power && this.resources.power < action.cost.power) { this.showToast('danger', 'Insufficient Energy Grid Capacity!'); return; }
         
         this.resources.budget -= (action.cost.budget || 0);
         this.resources.power -= (action.cost.power || 0);
@@ -686,8 +714,8 @@ class GameEngine {
         if (p.includes('Medical Expert (Vita)/Neutral State')) return p.replace('Neutral State', 'Talking State');
         if (p.includes('Social Reformer (Carmine)/Neutral State')) return p.replace('Neutral State', 'Talk State');
         if (p.includes('Virdis)/Neutral Sprite.png')) return p.replace('Neutral Sprite.png', 'Neutral Talk Sprite.jpg');
-        if (p.includes('Delta Neutral Sprite.jpg')) return p.replace('Neutral', 'Talk');
-        if (p.includes('Sigma Neutral Sprite.jpg')) return p.replace('Neutral', 'Talk');
+        if (p.includes('Delta Neutral Sprite.png')) return p.replace('Neutral', 'Talk');
+        if (p.includes('Sigma Neutral Sprite.png')) return p.replace('Neutral', 'Talk');
         if (p.includes('Generic NPC #1/Neutral Sprite')) return p.replace('Neutral Sprite', 'Neutral Talking Sprite');
         
         // Fallback heuristics for standard naming
@@ -936,15 +964,15 @@ class GameEngine {
     handleSpecialistIntervention(ev, s) {
         // Resource check
         if (s.costs.budget && this.resources.budget < s.costs.budget) { 
-            this.showToast('danger', `Insufficient Budget (Need 💰${s.costs.budget})`); 
+            this.showToast('danger', `Insufficient World Bank Reserves (Need $${s.costs.budget}B)`); 
             return; 
         }
         if (s.costs.power && this.resources.power < s.costs.power) { 
-            this.showToast('danger', `Insufficient Power (Need ⚡${s.costs.power})`); 
+            this.showToast('danger', `Insufficient Energy Grid Capacity (Need ${s.costs.power}P)`); 
             return; 
         }
         if (s.costs.influence && this.resources.influence < s.costs.influence) { 
-            this.showToast('danger', `Insufficient Influence (Need 🌟${s.costs.influence})`); 
+            this.showToast('danger', `Insufficient Global Influence (Need ${s.costs.influence}I)`); 
             return; 
         }
 
@@ -987,8 +1015,8 @@ class GameEngine {
 
     handleDecision(ev, opt) {
         if (opt.cost) {
-            if (this.resources.budget < (opt.cost.budget || 0)) { this.showToast('danger', 'No Budget!'); return; }
-            if (this.resources.power < (opt.cost.power || 0)) { this.showToast('danger', 'No Power!'); return; }
+            if (this.resources.budget < (opt.cost.budget || 0)) { this.showToast('danger', 'Insufficient World Bank Reserves!'); return; }
+            if (this.resources.power < (opt.cost.power || 0)) { this.showToast('danger', 'Insufficient Energy Grid Capacity!'); return; }
             this.resources.budget -= (opt.cost.budget || 0);
             this.resources.power -= (opt.cost.power || 0);
         }
