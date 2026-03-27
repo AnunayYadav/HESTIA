@@ -38,8 +38,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Neural bridge requires [message] and [specialistName]. Protocol aborted." });
     }
 
-    // 🏎️ Direct Neural Call (Switching to 2.0-flash to resolve 404)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    // 🏎️ Direct Neural Call (Switching to 3.0-flash-preview to resolve 429)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash-preview:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
