@@ -183,7 +183,12 @@ class GameEngine {
 
     renderTutorialStep() {
         const step = TUTORIAL_STEPS[this.tutorialStep];
-        document.getElementById('tutorial-icon').textContent = step.icon;
+        const iconEl = document.getElementById('tutorial-icon');
+        if (step.icon.startsWith('fa')) {
+            iconEl.innerHTML = `<i class="${step.icon}"></i>`;
+        } else {
+            iconEl.textContent = step.icon;
+        }
         document.getElementById('tutorial-title').textContent = step.title;
         document.getElementById('tutorial-text').textContent = step.text;
         const dots = document.querySelectorAll('.tutorial-dot');
@@ -359,7 +364,17 @@ class GameEngine {
             const card = document.createElement('div');
             card.className = 'specialist-card' + (s.cooldown > 0 ? ' on-cooldown' : '') + (s.deployed ? ' deployed' : '') + (this.selectedSpecialist === s.id ? ' selected' : '');
             card.onclick = () => this.openSpecModal(s.id);
-            let avatarHTML = s.img ? `<img class="specialist-avatar" src="${s.img}">` : `<div class="specialist-avatar-emoji">${s.emoji}</div>`;
+            
+            let avatarHTML = '';
+            if (s.img) {
+                avatarHTML = `<img class="specialist-avatar" src="${s.img}">`;
+            } else if (s.emoji.endsWith('.svg')) {
+                avatarHTML = `<img class="specialist-avatar-emoji hestia-icon-gold" src="${s.emoji}">`;
+            } else if (s.emoji.includes('fa-')) {
+                avatarHTML = `<div class="specialist-avatar-emoji"><i class="${s.emoji}"></i></div>`;
+            } else {
+                avatarHTML = `<div class="specialist-avatar-emoji">${s.emoji}</div>`;
+            }
             card.innerHTML = `${avatarHTML}
                 <div class="specialist-info">
                     <div class="specialist-name">${s.name}</div>
@@ -424,10 +439,14 @@ class GameEngine {
             const item = document.createElement('div');
             item.className = 'sm-cost-item';
             let unit = k === 'budget' ? 'B' : (k === 'power' ? 'P' : 'Mt');
-            let icon = k === 'budget' ? '💰' : (k === 'power' ? '⚡' : '🍎');
+            let iconHTML = '';
+            if (k === 'budget') iconHTML = `<img src="icons/world bank.svg" class="hestia-icon-small hestia-icon-gold">`;
+            else if (k === 'power') iconHTML = `<img src="icons/energy.svg" class="hestia-icon-small">`;
+            else iconHTML = `<i class="fas fa-apple-whole" style="font-size:0.8em; color:var(--accent-influence)"></i>`;
+
             let label = k === 'budget' ? 'Budget' : (k === 'power' ? 'Energy' : 'Food');
             item.innerHTML = `
-                <span class="sm-cost-icon">${icon}</span> 
+                <span class="sm-cost-icon">${iconHTML}</span> 
                 <span class="sm-cost-label">${label}</span>: 
                 <span class="sm-cost-val">${k === 'budget' ? '$' : ''}${v}${unit}</span>
             `;
@@ -542,6 +561,7 @@ class GameEngine {
             - TRAITS: ${pers.traits}
             - BACKSTORY: ${pers.backstory}
             - VOICE/STYLE: ${pers.style}
+            - DIALOGUE EXAMPLES: ${pers.dialogue_examples}
             
             # CORE MISSION (CRITICAL):
             - YOU ARE THE GUARDIAN OF: ${spec.sdg}.
@@ -573,7 +593,7 @@ class GameEngine {
             div.className = 'region-overlay ' + this.getRegionStatusClass(r) + (this.selectedRegion === r.id ? ' selected' : '');
             div.style.cssText = `left:${r.x};top:${r.y};width:${r.w};height:${r.h};`;
             div.onclick = (e) => { e.stopPropagation(); this.selectRegion(r.id); };
-            let icons = r.crisis ? '<span class="region-crisis-icon">⚠️</span>' : '';
+            let icons = r.crisis ? '<span class="region-crisis-icon"><i class="fas fa-triangle-exclamation"></i></span>' : '';
             div.innerHTML = `<div class="region-label">${r.name}</div><div class="region-icons">${icons}</div>`;
             wrapper.appendChild(div);
         });
@@ -689,8 +709,8 @@ class GameEngine {
         const actionsEl = document.getElementById('ri-actions');
         actionsEl.innerHTML = '';
         const actions = [
-            { text: '💎 Foreign Aid ($30B)', type: 'aid', cost:{budget:30}, effects:{health:10, economy:-5} },
-            { text: '⛔ Sanction (20P)', type: 'sanction', cost:{power:20}, effects:{stability:5, economy:-10} }
+            { text: 'Aid Grant (-$30B)', type: 'aid', cost:{budget:30}, effects:{health:10, economy:-5} },
+            { text: 'Sanction (-20P)', type: 'sanction', cost:{power:20}, effects:{stability:5, economy:-10} }
         ];
         actions.forEach(a => {
             const btn = document.createElement('button');
@@ -762,19 +782,20 @@ class GameEngine {
         const vitalsContainer = document.getElementById('dm-vitals');
         vitalsContainer.innerHTML = '';
         const statColors = {
-            pollution: { label: 'Pollution', color: '#ff4d4d', icon: '🏭', invert: true },
-            health: { label: 'Health', color: '#4dff88', icon: '❤️', invert: false },
-            economy: { label: 'Economy', color: '#e8a44a', icon: '💰', invert: false },
-            stability: { label: 'Stability', color: '#ffcc00', icon: '⚖️', invert: false },
-            sustainability: { label: 'Sustainability', color: '#f1c27d', icon: '🌱', invert: false }
+            pollution: { label: 'Pollution', color: '#ff4d4d', icon: 'icons/POLLUTION.svg', isSVG: true, invert: true },
+            health: { label: 'Health', color: '#4dff88', icon: 'icons/health.svg', isSVG: true, invert: false },
+            economy: { label: 'Economy', color: '#e8a44a', icon: 'icons/economy.svg', isSVG: true, invert: false },
+            stability: { label: 'Stability', color: '#ffcc00', icon: 'icons/stability.svg', isSVG: true, invert: false },
+            sustainability: { label: 'Sustainability', color: '#f1c27d', icon: 'fas fa-leaf', isSVG: false, invert: false }
         };
         Object.entries(statColors).forEach(([key, meta]) => {
             const val = r.stats[key] || 0;
             const item = document.createElement('div');
             item.className = 'dm-vital-item';
+            let iconHTML = meta.isSVG ? `<img src="${meta.icon}" class="hestia-icon-small" style="filter: brightness(0) saturate(100%) invert(1);">` : `<i class="${meta.icon}" style="color:${meta.color}"></i>`;
             item.innerHTML = `
                 <div class="dm-vital-header">
-                    <span class="dm-vital-icon">${meta.icon}</span>
+                    <span class="dm-vital-icon">${iconHTML}</span>
                     <span class="dm-vital-label">${meta.label}</span>
                     <span class="dm-vital-value" style="color:${meta.color}">${val}</span>
                 </div>
@@ -842,11 +863,11 @@ class GameEngine {
         };
 
         const SDG_ICONS = {
-            'SDG 1': '🏚️', 'SDG 2': '🌾', 'SDG 3': '💊', 'SDG 4': '📚',
-            'SDG 5': '♀️', 'SDG 6': '💧', 'SDG 7': '⚡', 'SDG 8': '📈',
-            'SDG 9': '🏗️', 'SDG 10': '⚖️', 'SDG 11': '🏙️', 'SDG 12': '♻️',
-            'SDG 13': '🌡️', 'SDG 14': '🐟', 'SDG 15': '🌳', 'SDG 16': '🕊️',
-            'SDG 17': '🤝'
+            'SDG 1': 'fas fa-house-crack', 'SDG 2': 'fas fa-wheat-awn', 'SDG 3': 'fas fa-staff-aesculapius', 'SDG 4': 'fas fa-book-open',
+            'SDG 5': 'fas fa-venus-mars', 'SDG 6': 'fas fa-droplet', 'SDG 7': 'fas fa-bolt-lightning', 'SDG 8': 'fas fa-chart-line',
+            'SDG 9': 'fas fa-industry', 'SDG 10': 'fas fa-scale-balanced', 'SDG 11': 'fas fa-city', 'SDG 12': 'fas fa-recycle',
+            'SDG 13': 'fas fa-temperature-full', 'SDG 14': 'fas fa-fish-fins', 'SDG 15': 'fas fa-tree', 'SDG 16': 'fas fa-dove',
+            'SDG 17': 'fas fa-handshake'
         };
 
         const achievedContainer = document.getElementById('dm-sdg-achieved');
@@ -856,7 +877,7 @@ class GameEngine {
             const card = document.createElement('div');
             card.className = 'dm-sdg-card achieved';
             card.innerHTML = `
-                <div class="dm-sdg-card-icon">${SDG_ICONS[sdgKey] || '✅'}</div>
+                <div class="dm-sdg-card-icon"><i class="${SDG_ICONS[sdgKey] || 'fas fa-circle-check'}"></i></div>
                 <div class="dm-sdg-card-content">
                     <div class="dm-sdg-card-title">${sdg}</div>
                     <div class="dm-sdg-card-desc">${SDG_DESCRIPTIONS[sdgKey] || ''}</div>
@@ -873,7 +894,7 @@ class GameEngine {
             const card = document.createElement('div');
             card.className = 'dm-sdg-card active';
             card.innerHTML = `
-                <div class="dm-sdg-card-icon">${SDG_ICONS[sdgKey] || '🎯'}</div>
+                <div class="dm-sdg-card-icon"><i class="${SDG_ICONS[sdgKey] || 'fas fa-bullseye'}"></i></div>
                 <div class="dm-sdg-card-content">
                     <div class="dm-sdg-card-title">${sdg}</div>
                     <div class="dm-sdg-card-desc">${SDG_DESCRIPTIONS[sdgKey] || ''}</div>
@@ -889,12 +910,12 @@ class GameEngine {
         const policiesContainer = document.getElementById('dm-policies');
         policiesContainer.innerHTML = '';
         (d.policies || []).forEach(p => {
-            const typeIcons = { energy: '⚡', social: '👥', defense: '🛡️', trade: '📦' };
+            const typeIcons = { energy: 'fas fa-bolt', social: 'fas fa-users-gear', defense: 'fas fa-shield-halved', trade: 'fas fa-box-open' };
             const statusColors = { active: 'var(--accent-gold)', achieved: 'var(--accent-green)', failed: 'var(--accent-red)', stalled: 'var(--accent-yellow)' };
             const el = document.createElement('div');
             el.className = 'dm-policy-item';
             el.innerHTML = `
-                <div class="dm-policy-icon">${typeIcons[p.type] || '📋'}</div>
+                <div class="dm-policy-icon"><i class="${typeIcons[p.type] || 'fas fa-clipboard-list'}"></i></div>
                 <div class="dm-policy-info">
                     <div class="dm-policy-name">${p.name}</div>
                     <div class="dm-policy-desc">${p.desc}</div>
@@ -909,12 +930,12 @@ class GameEngine {
         relationsContainer.innerHTML = '';
         (d.relations || []).forEach(rel => {
             const statusColors = { allied: '#4dff88', trade: '#f1c27d', neutral: '#ffcc00', tense: '#ff9f4d', hostile: '#ff3366' };
-            const statusIcons = { allied: '🤝', trade: '📦', neutral: '😐', tense: '⚠️', hostile: '⚔️' };
+            const statusIcons = { allied: 'fas fa-handshake', trade: 'fas fa-box-open', neutral: 'fas fa-minus', tense: 'fas fa-triangle-exclamation', hostile: 'fas fa-shield-halved' };
             const el = document.createElement('div');
             el.className = 'dm-relation-item';
             el.innerHTML = `
                 <div class="dm-relation-header">
-                    <span class="dm-relation-icon">${statusIcons[rel.status] || '❓'}</span>
+                    <span class="dm-relation-icon"><i class="${statusIcons[rel.status] || 'fas fa-question'}"></i></span>
                     <span class="dm-relation-name">${rel.region}</span>
                     <span class="dm-relation-status" style="color:${statusColors[rel.status]}">${rel.status.toUpperCase()}</span>
                 </div>
@@ -928,12 +949,12 @@ class GameEngine {
         econGrid.innerHTML = '';
         const ep = d.econProfile || {};
         const econItems = [
-            { label: 'Trade Balance', value: ep.tradeBalance || '—', icon: '📊' },
-            { label: 'Primary Exports', value: ep.exports || '—', icon: '📦' },
-            { label: 'Major Industries', value: ep.industries || '—', icon: '🏭' },
-            { label: 'National Debt', value: ep.debt || '—', icon: '💳' },
-            { label: 'Unemployment', value: ep.unemployment || '—', icon: '👷' },
-            { label: 'Gini Index', value: ep.giniIndex || '—', icon: '⚖️' }
+            { label: 'Trade Balance', value: ep.tradeBalance || '—', icon: 'fas fa-chart-pie' },
+            { label: 'Primary Exports', value: ep.exports || '—', icon: 'fas fa-box' },
+            { label: 'Major Industries', value: ep.industries || '—', icon: 'fas fa-industry' },
+            { label: 'National Debt', value: ep.debt || '—', icon: 'fas fa-credit-card' },
+            { label: 'Unemployment', value: ep.unemployment || '—', icon: 'fas fa-user-slash' },
+            { label: 'Gini Index', value: ep.giniIndex || '—', icon: 'fas fa-scale-unbalanced' }
         ];
         econItems.forEach(item => {
             const el = document.createElement('div');
@@ -1029,6 +1050,7 @@ class GameEngine {
 
     renderEvents() {
         const container = document.getElementById('events-list');
+        if (!container) return;
         container.innerHTML = '';
         this.activeEvents.forEach(ev => {
             const div = document.createElement('div');
@@ -1044,9 +1066,16 @@ class GameEngine {
             div.style.setProperty('--event-accent', accentColor);
             div.style.borderLeftColor = accentColor;
             
+            let iconHTML = ev.icon;
+            if (ev.icon.includes('fa-')) {
+                iconHTML = `<i class="${ev.icon}"></i>`;
+            } else if (ev.icon.endsWith('.svg')) {
+                iconHTML = `<img src="${ev.icon}" class="hestia-icon hestia-icon-gold">`;
+            }
+
             div.innerHTML = `
                 <div class="event-header">
-                    <span class="event-icon">${ev.icon}</span>
+                    <span class="event-icon">${iconHTML}</span>
                     <span class="event-title">${ev.title}</span>
                 </div>
                 <div class="event-body">
@@ -1569,14 +1598,14 @@ class GameEngine {
 
     runPlantOrPollute() {
         const container = document.getElementById('mg-canvas-container');
-        document.getElementById('mg-instructions').textContent = "TAP TREES 🌳 ONLY. AVOID FACTORIES 🏭.";
+        document.getElementById('mg-instructions').textContent = "TAP SUSTAINABLE PROJECTS ONLY. AVOID INDUSTRIAL WASTE.";
         
         const spawn = () => {
             if (!this.currentMinigame.active) return;
             const icon = document.createElement('div');
             const isGood = Math.random() > 0.4;
             icon.className = 'mg-falling-icon';
-            icon.textContent = isGood ? '🌳' : '🏭';
+            icon.innerHTML = isGood ? '<i class="fas fa-tree"></i>' : '<i class="fas fa-industry"></i>';
             icon.style.left = Math.random() * 90 + '%';
             icon.style.top = '-50px';
             
@@ -1612,7 +1641,7 @@ class GameEngine {
 
     runConnectPower() {
         const container = document.getElementById('mg-canvas-container');
-        document.getElementById('mg-instructions').textContent = "TAP TO ROTATE. ALIGN ALL TO VERTICAL (⬆️).";
+        document.getElementById('mg-instructions').textContent = "TAP TO ROTATE. ALIGN ALL TO VERTICAL (UP).";
         
         const grid = document.createElement('div');
         grid.className = 'mg-wire-grid';
@@ -1622,7 +1651,7 @@ class GameEngine {
             const cell = document.createElement('div');
             cell.className = 'mg-wire-cell';
             const rotation = Math.floor(Math.random() * 4) * 90;
-            cell.innerHTML = `<span class="mg-wire-icon" style="transform: rotate(${rotation}deg)">🔌</span>`;
+            cell.innerHTML = `<span class="mg-wire-icon" style="transform: rotate(${rotation}deg)"><i class="fas fa-plug"></i></span>`;
             
             let currentRot = rotation;
             cell.onclick = () => {
@@ -1652,16 +1681,16 @@ class GameEngine {
         if (s.id === 'health') {
             document.getElementById('mg-instructions').textContent = "PHARMACEUTICAL PROTOCOL: PREVENT -> TREAT -> PROTECT";
             steps = [
-                { id: 1, text: "🚫 STOP GATHERINGS" },
-                { id: 2, text: "🚑 EMERGENCY TREATMENT" },
-                { id: 3, text: "💉 MASS VACCINATION" }
+                { id: 1, text: '<i class="fas fa-ban"></i> STOP GATHERINGS' },
+                { id: 2, text: '<i class="fas fa-ambulance"></i> EMERGENCY TREATMENT' },
+                { id: 3, text: '<i class="fas fa-syringe"></i> MASS VACCINATION' }
             ];
         } else {
             document.getElementById('mg-instructions').textContent = "STRATEGIC DEPLOYMENT: INTEL -> STRIKE -> SECURE";
             steps = [
-                { id: 1, text: "📡 RECONNAISSANCE" },
-                { id: 2, text: "⚔️ PRECISION STRIKE" },
-                { id: 3, text: "🛡️ AREA SECURE" }
+                { id: 1, text: '<i class="fas fa-satellite-dish"></i> RECONNAISSANCE' },
+                { id: 2, text: '<i class="fas fa-crosshairs"></i> PRECISION STRIKE' },
+                { id: 3, text: '<i class="fas fa-shield-halved"></i> AREA SECURE' }
             ];
         }
 
@@ -1678,7 +1707,7 @@ class GameEngine {
             const item = document.createElement('div');
             item.className = 'mg-order-item';
             item.draggable = true;
-            item.innerHTML = `<span class="handle">☰</span> ${step.text}`;
+            item.innerHTML = `<span class="handle"><i class="fas fa-bars"></i></span> ${step.text}`;
             item.dataset.id = step.id;
             
             // Drag events
@@ -1790,14 +1819,14 @@ class GameEngine {
 
     runTacticalStrike() {
         const container = document.getElementById('mg-canvas-container');
-        document.getElementById('mg-instructions').textContent = "QUICK! ELIMINATE THE THREATS (🎯). SCORE 5 TO WIN.";
+        document.getElementById('mg-instructions').textContent = "QUICK! ELIMINATE THE THREATS. SCORE 5 TO WIN.";
         
         let score = 0;
         const spawn = () => {
             if (!this.currentMinigame.active) return;
             const target = document.createElement('div');
             target.className = 'mg-strike-target';
-            target.textContent = '🎯';
+            target.innerHTML = '<i class="fas fa-crosshairs"></i>';
             target.style.left = (10 + Math.random() * 80) + '%';
             target.style.top = (10 + Math.random() * 80) + '%';
             
@@ -1821,9 +1850,9 @@ class GameEngine {
 
     runAgreementPuzzle() {
         const container = document.getElementById('mg-canvas-container');
-        document.getElementById('mg-instructions').textContent = "ESTABLISH PARTNERSHIPS. MATCH THE SYMBOLS (🤝).";
+        document.getElementById('mg-instructions').textContent = "ESTABLISH PARTNERSHIPS. MATCH THE SYMBOLS.";
         
-        const symbols = ['🤝', '🕊️', '📜', '⚖️'];
+        const symbols = ['fas fa-handshake', 'fas fa-dove', 'fas fa-scroll', 'fas fa-scale-balanced'];
         let items = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
         
         const grid = document.createElement('div');
@@ -1836,7 +1865,7 @@ class GameEngine {
             const card = document.createElement('div');
             card.className = 'mg-match-card';
             card.dataset.sym = sym;
-            card.innerHTML = `<span class="mg-sym" style="visibility:hidden">${sym}</span>`;
+            card.innerHTML = `<span class="mg-sym" style="visibility:hidden"><i class="${sym}"></i></span>`;
             
             card.onclick = () => {
                 if (!this.currentMinigame.active || flipped.length >= 2 || card.classList.contains('matched') || flipped.includes(card)) return;
@@ -2043,7 +2072,7 @@ class GameEngine {
         const container = document.getElementById('toast-container');
         const t = document.createElement('div');
         t.className = 'toast ' + type;
-        t.innerHTML = `<span>⚡</span> ${msg}`;
+        t.innerHTML = `<span><i class="fas fa-bolt"></i></span> ${msg}`;
         container.appendChild(t);
         setTimeout(() => t.remove(), 4000);
     }

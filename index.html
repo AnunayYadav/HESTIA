@@ -26,7 +26,7 @@
                 <div class="name-tag">HESTIA</div>
                 <div class="dialogue-box" onclick="game.advanceIntro()">
                     <div id="intro-text" class="intro-dialogue-text"></div>
-                    <div class="next-indicator" id="intro-next-indicator">▶</div>
+                    <div class="next-indicator" id="intro-next-indicator"><i class="fas fa-chevron-right"></i></div>
                 </div>
                 <div class="controls-hint">Click to Continue • <span class="intro-skip-trigger" onclick="game.skipIntro()">Skip Intro</span></div>
             </div>
@@ -43,7 +43,7 @@
             <div class="tutorial-dot"></div>
             <div class="tutorial-dot"></div>
         </div>
-        <div class="tutorial-icon" id="tutorial-icon">🗺️</div>
+        <div class="tutorial-icon" id="tutorial-icon"><i class="fas fa-map"></i></div>
         <div class="tutorial-title" id="tutorial-title">The World Map</div>
         <div class="tutorial-text" id="tutorial-text">...</div>
         <div class="tutorial-nav">
@@ -74,7 +74,7 @@
             <div id="dialogue-text" class="dialogue-text">
                 Welcome, Commander. The world balance is in your hands.
             </div>
-            <div class="next-indicator" id="next-indicator">▶</div>
+            <div class="next-indicator" id="next-indicator"><i class="fas fa-chevron-right"></i></div>
         </div>
         <div class="controls-hint">Click or Space to Continue • ESC to Skip</div>
     </div>
@@ -108,10 +108,10 @@
         <!-- SIDEBAR CONTROLS -->
         <div class="sidebar-controls">
             <div class="sim-speed-group">
-                <button class="sim-speed-btn" id="sim-pause" onclick="game.setSpeed(0)" title="Pause Simulation">⏸</button>
-                <button class="sim-speed-btn active" id="sim-speed-1" onclick="game.setSpeed(1)" title="Normal Speed">▶</button>
-                <button class="sim-speed-btn" id="sim-speed-2" onclick="game.setSpeed(2)" title="Fast Speed">▶▶</button>
-                <button class="sim-speed-btn" id="sim-speed-3" onclick="game.setSpeed(3)" title="Ultra Speed">▶▶▶</button>
+                <button class="sim-speed-btn" id="sim-pause" onclick="game.setSpeed(0)" title="Pause Simulation"><i class="fas fa-pause"></i></button>
+                <button class="sim-speed-btn active" id="sim-speed-1" onclick="game.setSpeed(1)" title="Normal Speed"><i class="fas fa-play"></i></button>
+                <button class="sim-speed-btn" id="sim-speed-2" onclick="game.setSpeed(2)" title="Fast Speed"><i class="fas fa-forward"></i></button>
+                <button class="sim-speed-btn" id="sim-speed-3" onclick="game.setSpeed(3)" title="Ultra Speed"><i class="fas fa-fast-forward"></i></button>
             </div>
             <div class="sim-time-panel">
                 <div class="sim-date" id="sim-date">January 1, 2024</div>
@@ -152,7 +152,7 @@
                         </div>
                     </div>
                     <span class="region-info-gov" id="ri-gov">DEMOCRATIC</span>
-                    <button class="region-info-close" onclick="game.closeRegionInfo()">✕</button>
+                    <button class="region-info-close" onclick="game.closeRegionInfo()"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="region-leader-personality" id="ri-personality">Personality...</div>
                 <div class="region-stats-grid">
@@ -184,7 +184,7 @@
                 </div>
                 <div class="region-info-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
                     <div class="region-actions" id="ri-actions"></div>
-                    <button class="region-info-more-btn" id="ri-more-btn" title="View Detailed Dossier">→</button>
+                    <button class="region-info-more-btn" id="ri-more-btn" title="View Detailed Dossier"><i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
         </div>
@@ -198,15 +198,15 @@
             <div class="resource-stack side-panel-res">
                 <div id="res-money" class="resource-item res-money" title="World Bank Reserves">
                     <span class="res-label">World Bank</span>
-                    <span class="res-val">💰 $<span id="res-money-val">500</span>B</span>
+                    <span class="res-val"><img src="icons/world bank.svg" class="hestia-icon" style="filter: brightness(0) invert(1) drop-shadow(0 0 5px rgba(255,255,255,0.4));" alt="World Bank"> $<span id="res-money-val">500</span>B</span>
                 </div>
                 <div id="res-power" class="resource-item res-power" title="Global Grid Capacity">
                     <span class="res-label">Energy</span>
-                    <span class="res-val">⚡ <span id="res-power-val">100</span>P</span>
+                    <span class="res-val"><img src="icons/energy.svg" class="hestia-icon" alt="Energy"> <span id="res-power-val">100</span>P</span>
                 </div>
                 <div id="res-food" class="resource-item res-food" title="Global Food Supply for World Hunger">
                     <span class="res-label">Food</span>
-                    <span class="res-val">🍎 <span id="res-food-val">50</span>Mt</span>
+                    <span class="res-val"><i class="fas fa-apple-whole"></i> <span id="res-food-val">50</span>Mt</span>
                 </div>
                 <div class="resource-divider"></div>
                 <!-- Global Pollution, Health, and Economy stats removed from global view -->
@@ -298,7 +298,7 @@
                     <p id="chat-status">ONLINE / SECURE CHANNEL</p>
                 </div>
             </div>
-            <button class="chat-close" onclick="game.closeChat()">×</button>
+            <button class="chat-close" onclick="game.closeChat()"><i class="fas fa-times"></i></button>
         </div>
         <div id="chat-messages" class="chat-messages">
             <!-- Messages populate here -->
@@ -313,7 +313,7 @@
 <!-- Detailed Country Modal (Premium Dossier) -->
 <div id="detailed-country-modal" class="detailed-modal-overlay" onclick="game.closeDetailedModal()">
     <div class="dm-content" onclick="event.stopPropagation()">
-        <button class="dm-close-btn" onclick="game.closeDetailedModal()">✕</button>
+        <button class="dm-close-btn" onclick="game.closeDetailedModal()"><i class="fas fa-times"></i></button>
         
         <!-- Header Banner -->
         <div class="dm-header-banner">
@@ -518,7 +518,7 @@
     <div class="mg-container">
         <div class="mg-header">
             <div class="mg-title-row">
-                <span id="mg-icon" class="mg-icon">🌳</span>
+                <span id="mg-icon" class="mg-icon"><i class="fas fa-gamepad"></i></span>
                 <span id="mg-title" class="mg-title">MINIGAME</span>
             </div>
             <div class="mg-timer-box">

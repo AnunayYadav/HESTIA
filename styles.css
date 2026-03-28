@@ -45,6 +45,31 @@ html, body {
     color: var(--text-primary);
 }
 
+.hestia-icon {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+    display: inline-block;
+    filter: drop-shadow(0 0 5px rgba(241, 194, 125, 0.3));
+    object-fit: contain;
+}
+
+.hestia-icon-gold {
+    filter: brightness(0) saturate(100%) invert(85%) sepia(18%) celebrate(32%) hue-rotate(345deg) brightness(101%) contrast(92%); /* This is approx #f1c27d */
+    /* Alternative filter to make it look gold-ish */
+    filter: invert(82%) sepia(26%) saturate(601%) hue-rotate(331deg) brightness(101%) contrast(93%);
+}
+
+.hestia-icon-small {
+    width: 0.9em;
+    height: 0.9em;
+}
+
+.hestia-icon-large {
+    width: 2em;
+    height: 2em;
+}
+
 /* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

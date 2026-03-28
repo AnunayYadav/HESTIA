@@ -9,7 +9,7 @@ const SPECIALISTS = [
         sdg: getSpecData('health').sdg, 
         personality: getSpecData('health').personality,
         visuals: getSpecData('health').visuals,
-        emoji:'🏥', 
+        emoji:'icons/health.svg', 
         img:'Character/6 sages/Medical Expert (Vita)/Neutral State.png', 
         talkImg: 'Character/6 sages/Medical Expert (Vita)/Talking State.png', 
         desc:'A weary medical genius who values life above all. She saved the world once and would rather be in a back-alley clinic than high command.', 
@@ -28,7 +28,7 @@ const SPECIALISTS = [
         sdg: getSpecData('economist').sdg, 
         personality: getSpecData('economist').personality,
         visuals: getSpecData('economist').visuals,
-        emoji:'📊', 
+        emoji:'icons/economy.svg', 
         img:'Character/6 sages/Economist (Delta & Sigma)/Delta Neutral Sprite.png', 
         talkImg: 'Character/6 sages/Economist (Delta & Sigma)/Delta Talk Sprite.png', 
         desc:'Orphaned twins turned financial masterminds. They manipulate the flow of money as if it were fortune itself.', 
@@ -47,7 +47,7 @@ const SPECIALISTS = [
         sdg: getSpecData('war').sdg, 
         personality: getSpecData('war').personality,
         visuals: getSpecData('war').visuals,
-        emoji:'⚔️', 
+        emoji:'icons/stability.svg', 
         img:'Character/6 sages/War Commander (Virdis)/Neutral Sprite.png', 
         talkImg: 'Character/6 sages/War Commander (Virdis)/Neutral Talk Sprite.png', 
         desc:'The klutzy commander with a frighteningly high battle IQ. She remembers the name of every soldier she couldn\'t save.', 
@@ -66,7 +66,7 @@ const SPECIALISTS = [
         sdg: getSpecData('scientist').sdg, 
         personality: getSpecData('scientist').personality,
         visuals: getSpecData('scientist').visuals,
-        emoji:'🔬', 
+        emoji:'icons/energy.svg', 
         img:'Character/6 sages/Scientist (Celsius)/Neutral Sprite.png', 
         talkImg: 'Character/6 sages/Scientist (Celsius)/Talk Sprite.png', 
         desc:'A socially oblivious genius who would sacrifice his house—and yours—for the sake of a single breakthrough.', 
@@ -85,7 +85,7 @@ const SPECIALISTS = [
         sdg: getSpecData('diplomat').sdg, 
         personality: getSpecData('diplomat').personality,
         visuals: getSpecData('diplomat').visuals,
-        emoji:'🕊️', 
+        emoji:'icons/stability.svg', 
         img:'Character/6 sages/Social Reformer (Carmine)/Neutral State.png', 
         talkImg: 'Character/6 sages/Social Reformer (Carmine)/Talk State.png', 
         desc:'The noble who resigned for the people. Demanding, regal, yet fiercely protective of those under her command.', 
@@ -104,7 +104,7 @@ const SPECIALISTS = [
         sdg: getSpecData('environment').sdg, 
         personality: getSpecData('environment').personality,
         visuals: getSpecData('environment').visuals,
-        emoji:'🌿', 
+        emoji:'icons/POLLUTION.svg', 
         img:'Character/6 sages/Ecologist (Maris)/Neutral Sprite.png', 
         talkImg: 'Character/6 sages/Ecologist (Maris)/Talk Sprite.png', 
         desc:'A timid soul with a vast knowledge of the natural world. She speaks for the trees and the life they harbor.', 
@@ -279,7 +279,7 @@ const GOV_BEHAVIORS = {
 
 const EVENT_TEMPLATES = [
     { 
-        id:'epidemic', type:'health', recommendedSpec:'health', icon:'🦠', 
+        id:'epidemic', type:'health', recommendedSpec:'health', icon:'icons/health.svg', 
         title:'Pathogen Surge in {region}', 
         desc:'Rapid viral transmission detected. Fragile health systems are nearing collapse.', 
         learningFact:'SDG 3 focuses on "Good Health and Well-being." Strengthening immunization and healthcare infrastructure prevents global contagion.',
@@ -289,7 +289,7 @@ const EVENT_TEMPLATES = [
         ], hestia:'Pathogens respect no borders. Will you act before the first wave becomes a flood?', spreads:'health' 
     },
     { 
-        id:'economic_crash', type:'economy', recommendedSpec:'economist', icon:'📉', 
+        id:'economic_crash', type:'economy', recommendedSpec:'economist', icon:'icons/economy.svg', 
         title:'Market Instability in {region}', 
         desc:'Currency devaluation and inflation are eroding the middle class.', 
         learningFact:'SDG 8 promotes "Decent Work and Economic Growth." Balanced fiscal policy prevents systemic poverty and keeps societies stable.',
@@ -299,7 +299,7 @@ const EVENT_TEMPLATES = [
         ], hestia:'Wealth is ephemeral, but poverty is persistent. Command the markets or they will command you.', spreads:'economy' 
     },
     { 
-        id:'war', type:'stability', recommendedSpec:'war', icon:'⚔️', 
+        id:'war', type:'stability', recommendedSpec:'war', icon:'icons/stability.svg', 
         title:'Geopolitical Tension in {region}', 
         desc:'Border disputes have escalated into tactical skirmishes.', 
         learningFact:'SDG 16 is "Peace, Justice and Strong Institutions." Lasting progress is impossible without de-escalation and rule of law.',
@@ -309,7 +309,7 @@ const EVENT_TEMPLATES = [
         ], hestia:'The drums of war drown out the songs of progress. Virdis is ready to silence them.', spreads:'stability' 
     },
     { 
-        id:'pollution', type:'pollution', recommendedSpec:'environment', icon:'🏭', 
+        id:'pollution', type:'pollution', recommendedSpec:'environment', icon:'icons/POLLUTION.svg', 
         title:'Ecological Crisis in {region}', 
         desc:'Toxic runoff from heavy industry is contaminating the water table.', 
         learningFact:'SDG 13 covers "Climate Action." Carbon neutral industry and waste management are vital for a breathable future.',
@@ -319,7 +319,7 @@ const EVENT_TEMPLATES = [
         ], hestia:'The earth is a closed system. What we pour into it eventually returns to us.' 
     },
     { 
-        id:'civil_unrest', type:'stability', recommendedSpec:'diplomat', icon:'📢', 
+        id:'civil_unrest', type:'stability', recommendedSpec:'diplomat', icon:'icons/stability.svg', 
         title:'Social Fragility in {region}', 
         desc:'Widespread distrust of local governance has led to massive civil strikes.', 
         learningFact:'SDG 17 emphasizes "Partnerships for the Goals." Inclusive dialogue prevents radicalization and builds social capital.',
@@ -329,7 +329,7 @@ const EVENT_TEMPLATES = [
         ], hestia:'A kingdom divided cannot serve its people. Carmine will find the common thread.' 
     },
     { 
-        id:'tech_gap', type:'economy', recommendedSpec:'scientist', icon:'🔬', 
+        id:'tech_gap', type:'economy', recommendedSpec:'scientist', icon:'icons/energy.svg', 
         title:'Innovation Deficit in {region}', 
         desc:'A lack of digital infrastructure is creating a knowledge-based inequality gap.', 
         learningFact:'SDG 9 covers "Industry, Innovation and Infrastructure." Equal tech access is the fastest path to global equilibrium.',
@@ -350,8 +350,8 @@ const INTRO_DIALOGUES = [
 ];
 
 const TUTORIAL_STEPS = [
-    { icon:'📊', title:'Resource Management', text:'World Bank (💰), Energy (⚡), and Food (🍎) are your lifeblood. Every action—deploying specialists or making decisions—costs resources. If you run out, you cannot intervene.' },
-    { icon:'🔮', title:'Predictions', text:'Watch the Right Panel. It contains warnings of impending crises. An epidemic in one region WILL spread to neighbors unless halted. Use this foresight to pre-emptively deploy specialists.' },
-    { icon:'🎮', title:'Mini-Games', text:'Responding to major crises now triggers intervention mini-games. Your performance in these determines how effective the resolution is. High skill saves resources and lives.' },
-    { icon:'⏳', title:'The 40-Turn Count', text:'You have exactly 40 turns to bring the world into balance. Each turn represents significant global shift. The SDG progress meter must reach 100% by the final turn to trigger the Golden Age.' }
+    { icon:'fas fa-chart-line', title:'Resource Management', text:'World Bank, Energy, and Food are your lifeblood. Every action—deploying specialists or making decisions—costs resources. If you run out, you cannot intervene.' },
+    { icon:'fas fa-crystal-ball', title:'Predictions', text:'Watch the Right Panel. It contains warnings of impending crises. An epidemic in one region WILL spread to neighbors unless halted. Use this foresight to pre-emptively deploy specialists.' },
+    { icon:'fas fa-gamepad', title:'Mini-Games', text:'Responding to major crises now triggers intervention mini-games. Your performance in these determines how effective the resolution is. High skill saves resources and lives.' },
+    { icon:'fas fa-calendar-alt', title:'The 40-Turn Count', text:'You have exactly 40 turns to bring the world into balance. Each turn represents significant global shift. The SDG progress meter must reach 100% by the final turn to trigger the Golden Age.' }
 ];
