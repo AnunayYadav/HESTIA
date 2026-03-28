@@ -364,7 +364,7 @@ class GameEngine {
                 <div class="specialist-info">
                     <div class="specialist-name">${s.name}</div>
                     <div class="specialist-role">${s.role}</div>
-                    <div class="specialist-sdg" style="font-size:0.6rem; color:var(--accent-cyan); margin-top:2px;">${s.sdg}</div>
+                    <div class="specialist-sdg">${s.sdg}</div>
                 </div>
                 <span class="specialist-status ${s.cooldown > 0 ? 'cooldown' : s.deployed ? 'deployed' : 'ready'}">${s.cooldown > 0 ? 'CD:'+s.cooldown : s.deployed ? 'Active' : 'Ready'}</span>`;
             container.appendChild(card);
@@ -410,7 +410,7 @@ class GameEngine {
         // Detailed Requirements
         const isDeployed = s.isDeployed;
         document.getElementById('sm-deploy-cost').innerHTML = isDeployed ? 
-            `<span style="color:var(--accent-cyan)">ACTIVE ASSET</span>` : 
+            `<span style="color:var(--accent-gold); font-family:'Cinzel', serif; letter-spacing:1px; font-weight:700;">ACTIVE ASSET</span>` : 
             `<span class="sm-cost-val">$${s.deploymentCost}B</span> (Activation)`;
             
         document.getElementById('sm-maint-cost').innerHTML = isDeployed ? 
@@ -423,10 +423,14 @@ class GameEngine {
         Object.entries(s.costs).forEach(([k, v]) => {
             const item = document.createElement('div');
             item.className = 'sm-cost-item';
-            let unit = k === 'budget' ? 'B' : (k === 'power' ? 'P' : 'I');
-            let icon = k === 'budget' ? '💰' : (k === 'power' ? '⚡' : '🥖');
-            let label = k === 'budget' ? 'Capital' : (k === 'power' ? 'Power' : 'Influence');
-            item.innerHTML = `<span class="sm-cost-icon">${icon}</span> <span class="sm-cost-label">${label}</span>: <span class="sm-cost-val">${k === 'budget' ? '$' : ''}${v}${unit}</span>`;
+            let unit = k === 'budget' ? 'B' : (k === 'power' ? 'P' : 'Mt');
+            let icon = k === 'budget' ? '💰' : (k === 'power' ? '⚡' : '🍎');
+            let label = k === 'budget' ? 'Budget' : (k === 'power' ? 'Energy' : 'Food');
+            item.innerHTML = `
+                <span class="sm-cost-icon">${icon}</span> 
+                <span class="sm-cost-label">${label}</span>: 
+                <span class="sm-cost-val">${k === 'budget' ? '$' : ''}${v}${unit}</span>
+            `;
             costsRow.appendChild(item);
         });
 
@@ -1029,14 +1033,16 @@ class GameEngine {
         this.activeEvents.forEach(ev => {
             const div = document.createElement('div');
             // Assign a style variable for the event type color
+            // Refined accent colors for intelligence dossier feel
             let accentColor = 'var(--accent-gold)';
-            if(ev.type === 'health') accentColor = '#ff4d4d';
-            if(ev.type === 'pollution') accentColor = '#4dff88';
-            if(ev.type === 'stability') accentColor = '#ff9f4d';
-            if(ev.type === 'economy') accentColor = '#4d9fff';
+            if(ev.type === 'health') accentColor = 'var(--accent-red)';
+            if(ev.type === 'pollution') accentColor = 'var(--accent-green)';
+            if(ev.type === 'stability') accentColor = 'var(--accent-yellow)';
+            if(ev.type === 'economy') accentColor = 'var(--accent-gold)'; 
 
             div.className = `event-card severity-${ev.severity}`;
             div.style.setProperty('--event-accent', accentColor);
+            div.style.borderLeftColor = accentColor;
             
             div.innerHTML = `
                 <div class="event-header">
