@@ -263,7 +263,7 @@ html, body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 0 15px;
+    padding: 0 10px;
     flex: 1;
     height: 40px;
     position: relative;
@@ -271,13 +271,15 @@ html, body {
 }
 
 .sim-date {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--accent-gold);
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Cinzel', serif;
     z-index: 2;
+    white-space: nowrap;
+    text-shadow: 0 0 10px rgba(241, 194, 125, 0.2);
 }
 
 .sim-progress-container {
@@ -516,7 +518,7 @@ html, body {
 }
 
 .sim-speed-btn {
-    width: 45px;
+    width: 42px;
     height: 100%;
     background: #0d0c0b;
     border: none;
@@ -554,15 +556,7 @@ html, body {
     box-shadow: 0 0 10px var(--accent-gold);
 }
 
-.sim-date {
-    font-family: 'Cinzel', serif;
-    font-size: 0.85rem;
-    color: var(--accent-gold);
-    letter-spacing: 2.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    text-shadow: 0 0 15px rgba(241, 194, 125, 0.2);
-}
+/* Consolidated in early sim-date class above */
 
 .sim-progress-fill {
     height: 100%;
@@ -598,7 +592,7 @@ html, body {
 
 /* ========== LEFT PANEL ========== */
 .left-panel {
-    width: 280px;
+    width: 300px;
     height: 100%;
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
