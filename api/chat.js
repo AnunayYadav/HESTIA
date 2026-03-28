@@ -46,7 +46,7 @@ export default async function handler(req, res) {
             system_instruction: {
                 parts: [{ text: `You are ${specialistName}, the ${role} in the HESTIA World Government simulation. 
                 ${persona} 
-                Speak strictly in your persona using ONLY direct dialogue. No stage directions (*sighs*, *looks at you*) or narrative descriptions. Be immersive and educational about your SDG and role.` }]
+                Speak strictly in your persona using ONLY direct dialogue. No stage directions (*sighs*, etc.). Be concise—respond with only 2 or 3 impactful sentences that address the query and your SDG role.` }]
             },
             contents: [{
                 parts: [{ text: message }]
