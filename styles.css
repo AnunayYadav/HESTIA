@@ -2824,14 +2824,14 @@ html, body {
     max-width: 96%;
     height: 85vh;
     max-height: 820px;
-    background: linear-gradient(170deg, #0c0e14 0%, #08090f 50%, #0a0c12 100%);
-    border: 1px solid rgba(241, 194, 125, 0.1);
+    background: linear-gradient(170deg, #0f0d0a 0%, #0a0907 50%, #0d0c0b 100%);
+    border: 1px solid rgba(241, 194, 125, 0.15);
     border-radius: 20px;
     position: relative;
     box-shadow: 
-        0 40px 100px rgba(0, 0, 0, 0.9),
-        0 0 60px rgba(241, 194, 125, 0.03),
-        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        0 40px 100px rgba(0, 0, 0, 0.95),
+        0 0 80px rgba(241, 194, 125, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -2872,8 +2872,8 @@ html, body {
     align-items: center;
     gap: 24px;
     padding: 22px 30px 18px;
-    background: linear-gradient(90deg, rgba(241, 194, 125, 0.03) 0%, transparent 60%);
-    border-bottom: 1px solid rgba(241, 194, 125, 0.08);
+    background: linear-gradient(90deg, rgba(241, 194, 125, 0.05) 0%, transparent 80%);
+    border-bottom: 2px solid rgba(241, 194, 125, 0.12);
     flex-shrink: 0;
 }
 
@@ -3002,18 +3002,21 @@ html, body {
 
 .dm-hstat {
     text-align: center;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 0 16px;
+    background: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .dm-hstat-label {
-    font-size: 0.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--text-dim);
-    margin-bottom: 4px;
+    letter-spacing: 2px;
+    color: rgba(241, 194, 125, 0.45);
+    margin-bottom: 2px;
 }
 
 .dm-hstat-value {
@@ -3204,11 +3207,12 @@ html, body {
 }
 
 .dm-vital-label {
-    font-size: 0.72rem;
-    font-weight: 600;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 700;
     color: var(--text-secondary);
     flex: 1;
-    letter-spacing: 0.5px;
+    letter-spacing: 1.5px;
 }
 
 .dm-vital-value {
@@ -3241,13 +3245,15 @@ html, body {
 
 
 .dm-assess-label {
-    font-size: 0.6rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 6px;
+    color: rgba(241, 194, 125, 0.6);
 }
 
 .dm-assess-label.good { color: #4dff88; }
@@ -3321,10 +3327,11 @@ html, body {
 }
 
 .dm-phil-label {
+    font-family: 'Cinzel', serif;
     font-size: 0.55rem;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--text-dim);
+    letter-spacing: 2.5px;
+    color: rgba(241, 194, 125, 0.4);
     width: 120px;
     flex-shrink: 0;
 }
@@ -3376,9 +3383,9 @@ html, body {
 }
 
 .dm-sdg-card-icon {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     flex-shrink: 0;
-    width: 36px;
+    width: 40px;
     text-align: center;
     margin-top: 2px;
 }
@@ -3389,8 +3396,10 @@ html, body {
 }
 
 .dm-sdg-card-title {
-    font-size: 0.78rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
     font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--text-primary);
     margin-bottom: 3px;
 }
@@ -3440,10 +3449,11 @@ html, body {
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.015);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 12px 0;
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s;
 }
 
@@ -3465,8 +3475,10 @@ html, body {
 }
 
 .dm-policy-name {
-    font-size: 0.78rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
     font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--text-primary);
     margin-bottom: 3px;
 }
@@ -3488,10 +3500,11 @@ html, body {
 
 /* Relations */
 .dm-relation-item {
-    padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.015);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 14px 0;
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     transition: all 0.3s;
 }
 
@@ -3511,8 +3524,10 @@ html, body {
 }
 
 .dm-relation-name {
-    font-size: 0.82rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
     font-weight: 700;
+    letter-spacing: 0.5px;
     color: var(--text-primary);
     flex: 1;
 }
