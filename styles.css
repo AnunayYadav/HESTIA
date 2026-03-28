@@ -2264,8 +2264,27 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    mask-image: linear-gradient(to top, black 80%, transparent 100%);
-    padding-bottom: 10px;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 100%;
+    pointer-events: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-gold) rgba(0, 0, 0, 0.3);
+}
+
+/* Custom Scrollbar for Floating Chat */
+.sm-float-chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sm-float-chat-messages::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.sm-float-chat-messages::-webkit-scrollbar-thumb {
+    background: var(--accent-gold);
+    border-radius: 10px;
 }
 
 .sm-float-msg {
@@ -2275,19 +2294,19 @@ html, body {
     line-height: 1.5;
     max-width: 90%;
     backdrop-filter: blur(12px);
-    pointer-events: auto;
     animation: smFloatIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    word-wrap: break-word; /* Ensure long words don't overflow */
 }
 
 @keyframes smFloatIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.95); opacity: 0; }
-    to { opacity: 1; transform: translateY(0) scale(1); opacity: 1; }
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .sm-float-msg-char {
     align-self: flex-start;
-    background: rgba(13, 14, 25, 0.85);
+    background: rgba(13, 14, 25, 0.9);
     border: 1px solid rgba(212, 168, 83, 0.3);
     border-left: 3px solid var(--accent-gold);
     color: #f0f0f0;
@@ -2295,10 +2314,10 @@ html, body {
 
 .sm-float-msg-user {
     align-self: flex-end;
-    background: rgba(212, 168, 83, 0.15);
-    border: 1px solid rgba(212, 168, 83, 0.4);
-    border-right: 3px solid var(--accent-gold);
-    color: var(--accent-gold);
+    background: rgba(212, 168, 83, 0.4); /* Darker gold for better contrast */
+    border: 1px solid rgba(212, 168, 83, 0.6);
+    color: #fff; /* White text for clear visibility */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 1); /* Hard shadow to pop text */
 }
 
 .sm-chat-input-wrapper {

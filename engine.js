@@ -480,14 +480,15 @@ class GameEngine {
         const msgDiv = document.createElement('div');
         msgDiv.className = `sm-float-msg ${sender === 'char' ? 'sm-float-msg-char' : 'sm-float-msg-user'}`;
         
-        // Remove older messages for space
+        // With scroll bar enabled, we can keep more history
         const allMsgs = container.querySelectorAll('.sm-float-msg');
-        if (allMsgs.length > 3) allMsgs[0].remove();
+        if (allMsgs.length > 12) allMsgs[0].remove();
 
         msgDiv.textContent = text;
         container.appendChild(msgDiv);
         container.scrollTop = container.scrollHeight;
     }
+
 
     async sendModalChatMessage(spec, text) {
         if (!text) return;
