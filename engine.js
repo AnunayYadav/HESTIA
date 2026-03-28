@@ -433,92 +433,13 @@ class GameEngine {
             costsRow.appendChild(item);
         });
 
-        // Setup Immersive Modal Chat
-        const chatBtn = document.getElementById('sm-chat-btn');
-        const chatInputWrapper = document.getElementById('sm-chat-input-wrapper');
-        const chatMessages = document.getElementById('sm-chat-messages');
-        const chatInput = document.getElementById('sm-chat-input');
-        const sendBtn = document.getElementById('sm-chat-send');
-
-        if (chatBtn && chatInputWrapper) {
-            chatBtn.style.display = 'flex';
-            chatInputWrapper.style.display = 'none';
-            chatMessages.innerHTML = '';
-            chatInput.value = '';
-
-            chatBtn.onclick = () => {
-                chatBtn.style.display = 'none';
-                chatInputWrapper.style.display = 'flex';
-                this.addFloatingChatMessage('char', `Secure channel established. Identification verified. I am ${s.name}. Direct your inquiries.`);
-                chatInput.focus();
-            };
-
-            const handleSend = () => {
-                const text = chatInput.value.trim();
-                if (!text) return;
-                this.sendModalChatMessage(s, text);
-                chatInput.value = '';
-            };
-
-            sendBtn.onclick = handleSend;
-            chatInput.onkeydown = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSend();
-                }
-            };
-        }
+        // Setup Buttons
+        document.getElementById('sm-chat-btn').onclick = () => {
+            this.openChat(s);
+        };
 
         document.getElementById('spec-modal-overlay').classList.add('visible');
     }
-
-    // --- IMMERSIVE MODAL CHAT LOGIC ---
-    addFloatingChatMessage(sender, text) {
-        const container = document.getElementById('sm-chat-messages');
-        if (!container) return;
-
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `sm-float-msg ${sender === 'char' ? 'sm-float-msg-char' : 'sm-float-msg-user'}`;
-        
-        // With scroll bar enabled, we can keep more history
-        const allMsgs = container.querySelectorAll('.sm-float-msg');
-        if (allMsgs.length > 12) allMsgs[0].remove();
-
-        msgDiv.textContent = text;
-        container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
-    }
-
-
-    async sendModalChatMessage(spec, text) {
-        if (!text) return;
-        this.addFloatingChatMessage('user', text);
-
-        try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    specialistName: spec.name,
-                    role: spec.role,
-                    persona: this.getPersonaPrompt(spec),
-                    message: text
-                })
-            });
-
-            if (!response.ok) throw new Error();
-            const data = await response.json();
-            
-            setTimeout(() => {
-                this.addFloatingChatMessage('char', data.text || "Static... no signal detected.");
-            }, 600);
-
-        } catch (err) {
-            this.addFloatingChatMessage('char', "[SIGNAL LOST: Re-initialize comms.]");
-        }
-    }
-
-
 
     // ========== CHARACTER CHAT (GEMINI) ==========
     openChat(spec) {
