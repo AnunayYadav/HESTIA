@@ -119,22 +119,66 @@ const SPECIALISTS = [
 ];
 
 const REGIONS = [
-    { id:'northern', name:'Northern Highlands', gov:'democratic', leader:'Chancellor Aldric', leaderPersonality: 'A pragmatic diplomat who prioritizes stable growth over rapid, unchecked expansion.', x:'9%', y:'12%', w:'30%', h:'30%',
-      stats:{pollution:30,health:65,economy:60,stability:70,sustainability:55}, 
-      details: { population: '840M', gdp: '$4.2T', growth: '+2.1%', info: 'The industrial heartland of the world, specializing in heavy manufacturing and tech exports.' },
-      crisis:null, connections:['eastern','central'] },
-    { id:'eastern', name:'Eastern Shores', gov:'unstable', leader:'Warlord Kael', leaderPersonality: 'Aggressive and unpredictable. Relies on force and fear to maintain whatever little control he has.', x:'56%', y:'10%', w:'36%', h:'36%',
-      stats:{pollution:45,health:50,economy:45,stability:35,sustainability:30}, 
-      details: { population: '1.2B', gdp: '$2.8T', growth: '-1.5%', info: 'A maritime hub struggling with coastal erosion and persistent internal conflicts.' },
-      crisis:'unrest', connections:['northern','central','southern'] },
-    { id:'central', name:'Central Expanse', gov:'democratic', leader:'Premier Lysa', leaderPersonality: 'Charismatic and reform-minded. Struggles with balancing the old guard against progressive ideals.', x:'16%', y:'45%', w:'38%', h:'35%',
-      stats:{pollution:35,health:60,economy:55,stability:60,sustainability:50}, 
-      details: { population: '2.1B', gdp: '$6.5T', growth: '+4.8%', info: 'The breadbasket of the globe, managing vast agricultural plains and emerging tech cities.' },
-      crisis:null, connections:['northern','eastern','southern'] },
-    { id:'southern', name:'Southern Dominion', gov:'authoritarian', leader:'Overseer Dren', leaderPersonality: 'Calculated and iron-fisted. Rules with absolute authority, ensuring maximum efficiency at a high human cost.', x:'55%', y:'52%', w:'36%', h:'42%',
-      stats:{pollution:60,health:45,economy:70,stability:50,sustainability:20}, 
-      details: { population: '950M', gdp: '$5.1T', growth: '+1.2%', info: 'A resource-rich territory with high levels of industrial output but severe social inequality.' },
-      crisis:null, connections:['eastern','central'] }
+    { 
+        id:'northern', name:'Northern Highlands', gov:'democratic', leader:'Chancellor Aldric', 
+        leaderPersonality: 'A pragmatic diplomat who prioritizes stable growth over rapid, unchecked expansion.', 
+        x:'9%', y:'12%', w:'30%', h:'30%',
+        stats:{pollution:30,health:65,economy:60,stability:70,sustainability:55}, 
+        details: { 
+            population: '840M', gdp: '$4.2T', growth: '+2.1%', 
+            info: 'The industrial heartland of the world, specializing in heavy manufacturing and tech exports.',
+            history: 'Once a collection of warring mountain clans, the Highlands unified three centuries ago under the Great Accord. Their history is defined by the Industrial Ascent, which brought prosperity but at a heavy environmental cost. Today, they lead the Global Council but face rising pressures to green their heavy industries.',
+            sdg_goals: ['SDG 7: Affordable and Clean Energy', 'SDG 12: Responsible Consumption and Production', 'SDG 13: Climate Action'],
+            sdg_achieved: ['SDG 4: Quality Education', 'SDG 9: Industry, Innovation and Infrastructure'],
+            philosophy: 'Technocratic Democracy. They believe that through scientific advancement and democratic oversight, the world can achieve a "Post-Scarcity" equilibrium.'
+        },
+        crisis:null, connections:['eastern','central'] 
+    },
+    { 
+        id:'eastern', name:'Eastern Shores', gov:'unstable', leader:'Warlord Kael', 
+        leaderPersonality: 'Aggressive and unpredictable. Relies on force and fear to maintain whatever little control he has.', 
+        x:'56%', y:'10%', w:'36%', h:'36%',
+        stats:{pollution:45,health:50,economy:45,stability:35,sustainability:30}, 
+        details: { 
+            population: '1.2B', gdp: '$2.8T', growth: '-1.5%', 
+            info: 'A maritime hub struggling with coastal erosion and persistent internal conflicts.',
+            history: 'The Shores were the birthplace of the Age of Sail, thriving as the world\'s primary trade route for centuries. However, the centralization of global trade through digital corridors left their ports idle. This economic vacuum birthed the Warlord Era, where various factions fight for the remaining naval scrap yards.',
+            sdg_goals: ['SDG 14: Life Below Water', 'SDG 16: Peace, Justice and Strong Institutions', 'SDG 2: Zero Hunger'],
+            sdg_achieved: ['SDG 1: No Poverty (Historical)'],
+            philosophy: 'Factional Mercantilism. The region is governed by trade-lords, where peace is often a commodity bought with resources or blood.'
+        },
+        crisis:'unrest', connections:['northern','central','southern'] 
+    },
+    { 
+        id:'central', name:'Central Expanse', gov:'democratic', leader:'Premier Lysa', 
+        leaderPersonality: 'Charismatic and reform-minded. Struggles with balancing the old guard against progressive ideals.', 
+        x:'16%', y:'45%', w:'38%', h:'35%',
+        stats:{pollution:35,health:60,economy:55,stability:60,sustainability:50}, 
+        details: { 
+            population: '2.1B', gdp: '$6.5T', growth: '+4.8%', 
+            info: 'The breadbasket of the globe, managing vast agricultural plains and emerging tech cities.',
+            history: 'Formed from the remains of the Old Empire, the Expanse is a melting pot of cultures. Its fertile plains provide 60% of the world\'s food supply. The recent "Silicon Plains" initiative has turned dusty farm towns into neon-drenched megahubs, creating a cultural friction between traditionalists and progressives.',
+            sdg_goals: ['SDG 10: Reduced Inequalities', 'SDG 11: Sustainable Cities and Communities', 'SDG 5: Gender Equality'],
+            sdg_achieved: ['SDG 2: Zero Hunger', 'SDG 6: Clean Water and Sanitation'],
+            philosophy: 'Social Progressivism. They strive for a world where labor is honored and the benefits of automation are shared equally among all citizens.'
+        },
+        crisis:null, connections:['northern','eastern','southern'] 
+    },
+    { 
+        id:'southern', name:'Southern Dominion', gov:'authoritarian', leader:'Overseer Dren', 
+        leaderPersonality: 'Calculated and iron-fisted. Rules with absolute authority, ensuring maximum efficiency at a high human cost.', 
+        x:'55%', y:'52%', w:'36%', h:'42%',
+        stats:{pollution:60,health:45,economy:70,stability:50,sustainability:20}, 
+        details: { 
+            population: '950M', gdp: '$5.1T', growth: '+1.2%', 
+            info: 'A resource-rich territory with high levels of industrial output but severe social inequality.',
+            history: 'The Dominion was once a scattered archipelago of city-states. Overseer Dren\'s grandfather unified them through the "Titan Project," an unprecedented mining operation that tapped into the planet\'s mantle. This created immense wealth but chained the population to a life of industrial servitude.',
+            sdg_goals: ['SDG 3: Good Health and Well-being', 'SDG 15: Life on Land', 'SDG 13: Climate Action'],
+            sdg_achieved: ['SDG 8: Decent Work and Economic Growth (Metrics)'],
+            philosophy: 'Industrial Efficiency. Every citizen is a cog in the national machine. Order is maintained through meticulous surveillance and resource quotas.'
+        },
+        crisis:null, connections:['eastern','central'] 
+    }
 ];
 
 const GOV_BEHAVIORS = {

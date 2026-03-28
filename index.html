@@ -7,6 +7,7 @@
     <title>Aegis of Balance — Global Strategy Simulation</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="minigame.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 <div id="toast-container" class="toast-container"></div>
@@ -308,46 +309,71 @@
 <div id="detailed-country-modal" class="detailed-modal-overlay" onclick="game.closeDetailedModal()">
     <div class="detailed-modal-content" onclick="event.stopPropagation()">
         <button class="detailed-modal-close" onclick="game.closeDetailedModal()">✕</button>
+        
+        <div class="detailed-modal-header">
+            <h1 id="dm-name" class="detailed-country-name">NORTHERN HIGHLANDS</h1>
+            <div class="header-divider"></div>
+        </div>
+
         <div class="detailed-modal-body">
+            <!-- Left Side: Identity & Philosophy -->
             <div class="detailed-modal-side">
                 <div class="detailed-flag-wrapper">
-                    <img id="dm-flag" src="" alt="National Flag">
+                    <img id="dm-flag" src="Assets/Flags/northern.png" alt="National Flag">
                 </div>
-                <div class="detailed-leader-card">
-                    <small>HEAD OF STATE</small>
-                    <div id="dm-leader" class="value">...</div>
-                    <div id="dm-gov-detailed" class="sub-label">...</div>
+                
+                <div class="info-group">
+                    <label><i class="fas fa-crown"></i> HEAD OF STATE</label>
+                    <div id="dm-leader" class="value">Chancellor Aldric</div>
+                    <div id="dm-gov-detailed" class="sub-label">Technocratic Democracy</div>
                 </div>
-            </div>
-            <div class="detailed-modal-main">
-                <h1 id="dm-name" class="detailed-country-name">Country Name</h1>
-                <div class="detailed-stats-row">
-                    <div class="detailed-big-stat">
+
+                <div class="info-group">
+                    <label><i class="fas fa-scroll"></i> PHILOSOPHY</label>
+                    <p id="dm-philosophy" class="philosophy-text">Focus on long-term sustainability through technological dominance and algorithmic governance.</p>
+                </div>
+
+                <div class="detailed-big-stats">
+                    <div class="mini-stat">
                         <label>POPULATION</label>
-                        <div id="dm-pop" class="val">0</div>
+                        <span id="dm-pop">840M</span>
                     </div>
-                    <div class="detailed-big-stat">
-                        <label>GDP VALUATION</label>
-                        <div id="dm-gdp" class="val">$0</div>
-                    </div>
-                    <div class="detailed-big-stat">
-                        <label>GROWTH RATE</label>
-                        <div id="dm-growth" class="val">0%</div>
-                    </div>
-                </div>
-                <div class="detailed-dossier-box">
-                    <h3>REGIONAL DOSSIER</h3>
-                    <p id="dm-info">...</p>
-                </div>
-                <div class="detailed-sdg-focus">
-                    <div class="sdg-label">SDG ALIGNMENT TARGETS</div>
-                    <div class="sdg-tags">
-                        <span class="sdg-tag">SDG 8</span>
-                        <span class="sdg-tag">SDG 13</span>
-                        <span class="sdg-tag">SDG 16</span>
+                    <div class="mini-stat">
+                        <label>GDP</label>
+                        <span id="dm-gdp">$4.2T</span>
                     </div>
                 </div>
             </div>
+
+            <!-- Right Side: Lore & Progress -->
+            <div class="detailed-modal-main">
+                <div class="dossier-section">
+                    <h3><i class="fas fa-history"></i> HISTORICAL ARCHIVE</h3>
+                    <div class="scroll-box shadow-inset">
+                        <p id="dm-history">Loading archival data...</p>
+                    </div>
+                </div>
+
+                <div class="sdg-grid">
+                    <div class="sdg-column">
+                        <h3><i class="fas fa-check-circle"></i> ACHIEVED MILESTONES</h3>
+                        <div id="dm-sdg-achieved" class="sdg-list achieved">
+                            <!-- Tags here -->
+                        </div>
+                    </div>
+                    <div class="sdg-column">
+                        <h3><i class="fas fa-bullseye"></i> ACTIVE TARGETS</h3>
+                        <div id="dm-sdg-goals" class="sdg-list active">
+                            <!-- Tags here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="detailed-modal-footer">
+            <div class="status-blip"></div>
+            <span class="secure-line">ENCRYPTED COMMAND CONNECTION STABLE</span>
         </div>
     </div>
 </div>

@@ -282,7 +282,7 @@ class GameEngine {
         const resMap = {
             'res-money-val': { val: this.resources.budget, prev: this.prevResources.budget, parent: 'res-money' },
             'res-power-val': { val: this.resources.power, prev: this.prevResources.power, parent: 'res-power' },
-            'res-food-val': { val: this.resources.influence, prev: this.prevResources.influence, parent: 'res-food' }
+            'res-food-val': { val: this.resources.food, prev: this.prevResources.food, parent: 'res-food' }
         };
 
         Object.entries(resMap).forEach(([id, data]) => {
