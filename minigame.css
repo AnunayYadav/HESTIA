@@ -234,3 +234,62 @@
     padding: 12px 40px; font-weight: 700; letter-spacing: 2px; cursor: pointer; transition: all 0.3s;
 }
 .mg-feedback-btn:hover { background: #f1c27d; color: #000; box-shadow: 0 0 20px rgba(212, 168, 83, 0.4); }
+
+/* Tactical Strike (War) */
+.mg-strike-target {
+    position: absolute;
+    font-size: 3rem;
+    cursor: crosshair;
+    user-select: none;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: mg-target-appear 0.3s ease-out;
+    filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.5));
+}
+@keyframes mg-target-appear {
+    from { transform: scale(0) rotate(-45deg); opacity: 0; }
+    to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* Agreement Puzzle (Diplomat) */
+.mg-match-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 15px;
+    padding: 20px;
+    height: 100%;
+    align-content: center;
+}
+.mg-match-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    aspect-ratio: 1;
+}
+.mg-match-card:hover { 
+    background: rgba(212, 168, 83, 0.05); 
+    border-color: rgba(212, 168, 83, 0.3);
+}
+.mg-match-card.flipped {
+    background: rgba(212, 168, 83, 0.15);
+    border-color: var(--accent-gold);
+}
+.mg-match-card.matched {
+    background: rgba(0, 255, 170, 0.15);
+    border-color: #00ffaa;
+    opacity: 0.6;
+    pointer-events: none;
+    transform: scale(0.9);
+}
+.mg-sym {
+    transition: transform 0.3s;
+}
+.mg-match-card.flipped .mg-sym {
+    transform: scale(1.2);
+}

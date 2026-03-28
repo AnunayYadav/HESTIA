@@ -896,16 +896,25 @@ class GameEngine {
         if (this.narrative.talkingTimer) clearInterval(this.narrative.talkingTimer);
         
         // Restore neutral pose
-        const spriteImg = document.querySelector('.character-sprite');
-        if (spriteImg && this.narrative.neutralSprite) {
-            spriteImg.src = this.narrative.neutralSprite;
-        }
+        const sprites = document.querySelectorAll('.character-sprite');
+        sprites.forEach(spriteImg => {
+            if (spriteImg && this.narrative.neutralSprite) {
+                spriteImg.src = this.narrative.neutralSprite;
+            }
+        });
 
         const el = document.getElementById('dialogue-text');
         const step = this.narrative.queue[this.narrative.currentStep];
-        el.textContent = step.text;
+        if (step) el.textContent = step.text;
         document.getElementById('next-indicator').style.display = 'block';
         this.narrative.isTyping = false;
+    }
+
+    renderDialogue(name, text, sprite, talkSprite) {
+        document.getElementById('name-tag').textContent = name;
+        this.narrative.neutralSprite = sprite;
+        this.narrative.talkingSprite = talkSprite || this.getTalkingSprite(sprite);
+        this.typeText(text);
     }
 
     advanceNarrative() {
@@ -914,6 +923,11 @@ class GameEngine {
             return;
         }
         
+        // Prevent narrative advancement if a minigame is active (unless overridden)
+        if (this.currentMinigame && this.currentMinigame.active) {
+            return;
+        }
+
         this.narrative.currentStep++;
         if (this.narrative.currentStep < this.narrative.queue.length) {
             this.processNarrativeStep();
@@ -1174,7 +1188,9 @@ class GameEngine {
         // Route to specific game (Update instructions first)
         if (s.id === 'environment') this.runPlantOrPollute();
         else if (s.id === 'scientist') this.runConnectPower();
-        else if (['health', 'war', 'diplomat'].includes(s.id)) this.runOrderingGame();
+        else if (s.id === 'health') this.runOrderingGame();
+        else if (s.id === 'war') this.runTacticalStrike();
+        else if (s.id === 'diplomat') this.runAgreementPuzzle();
         else if (s.id === 'economist') this.runStabilizerGame();
         else this.runStabilizerGame();
 
@@ -1296,20 +1312,6 @@ class GameEngine {
                 { id: 2, text: "🚑 EMERGENCY TREATMENT" },
                 { id: 3, text: "💉 MASS VACCINATION" }
             ];
-        } else if (s.id === 'war') {
-            document.getElementById('mg-instructions').textContent = "MILITARY STRATEGY: INTEL -> STRIKE -> SECURE";
-            steps = [
-                { id: 1, text: "📡 RECONNAISSANCE" },
-                { id: 2, text: "⚔️ PRECISION STRIKE" },
-                { id: 3, text: "🛡️ AREA SECURE" }
-            ];
-        } else if (s.id === 'diplomat') {
-            document.getElementById('mg-instructions').textContent = "DIPLOMATIC DE-ESCALATION: HALT -> DIALOGUE -> ACCORD";
-            steps = [
-                { id: 1, text: "🛑 CEASEFIRE ORDER" },
-                { id: 2, text: "🤝 RECONCILIATION TALKS" },
-                { id: 3, text: "✍️ PEACE TREATY" }
-            ];
         } else {
             document.getElementById('mg-instructions').textContent = "STRATEGIC DEPLOYMENT: INTEL -> STRIKE -> SECURE";
             steps = [
@@ -1336,14 +1338,21 @@ class GameEngine {
             item.dataset.id = step.id;
             
             // Drag events
-            item.addEventListener('dragstart', () => item.classList.add('dragging'));
+            item.addEventListener('dragstart', (e) => {
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
             item.addEventListener('dragend', () => {
                 item.classList.remove('dragging');
                 this.checkOrdering(list, steps);
             });
 
-            // Click to Swap Logic
-            item.onclick = () => {
+            // Click to Swap Logic (Accessibility & Multi-input)
+            item.onclick = (e) => {
+                e.stopPropagation();
+                if (!this.currentMinigame.active) return;
+                
                 if (!this.currentMinigame.activeItem) {
                     this.currentMinigame.activeItem = item;
                     item.classList.add('mg-item-selected');
@@ -1353,11 +1362,20 @@ class GameEngine {
                 } else {
                     const node1 = this.currentMinigame.activeItem;
                     const node2 = item;
-                    const placeholder = document.createElement('div');
-                    node1.parentNode.insertBefore(placeholder, node1);
-                    node2.parentNode.insertBefore(node1, node2);
-                    placeholder.parentNode.insertBefore(node2, placeholder);
-                    placeholder.parentNode.removeChild(placeholder);
+                    // Stable Swap
+                    const parent = node1.parentNode;
+                    const next1 = node1.nextSibling;
+                    const next2 = node2.nextSibling;
+
+                    if (next1 === node2) {
+                        parent.insertBefore(node2, node1);
+                    } else if (next2 === node1) {
+                        parent.insertBefore(node1, node2);
+                    } else {
+                        parent.insertBefore(node1, next2);
+                        parent.insertBefore(node2, next1);
+                    }
+                    
                     node1.classList.remove('mg-item-selected');
                     this.currentMinigame.activeItem = null;
                     this.checkOrdering(list, steps);
@@ -1384,22 +1402,38 @@ class GameEngine {
     }
 
     checkOrdering(list, correctSteps) {
+        if (!this.currentMinigame.active) return;
         const currentIds = Array.from(list.children).map(i => parseInt(i.dataset.id));
         const correctCount = currentIds.filter((id, idx) => id === correctSteps[idx].id).length;
         const total = currentIds.length;
         const incorrectCount = total - correctCount;
         const s = this.currentMinigame.specialist;
 
-        // Visual highlight for individual correct items? (Optional, but let's do group success first)
-        
         if (correctCount === total) {
-            // Success State
+            // Stop the timer immediately to prevent "Mission Failed"
+            if (this.currentMinigame.timer) clearInterval(this.currentMinigame.timer);
+
             Array.from(list.children).forEach(it => {
                 it.classList.add('mg-item-success');
                 it.style.pointerEvents = 'none';
             });
+
             this.renderDialogue(s.name, `PERFECT! ALL ${total} STEPS SYNCHRONIZED.`, s.img, s.talkImg);
-            setTimeout(() => this.finishMiniGame(true), 1500);
+
+            // Success override for "Skip" or Click-to-Finish
+            const originalAdvance = this.advanceNarrative;
+            this.advanceNarrative = () => {
+                if (this.narrative.isTyping) { this.finishTyping(); return; }
+                this.advanceNarrative = originalAdvance;
+                this.finishMiniGame(true);
+            };
+
+            // Auto-advance after delay
+            this.winTimer = setTimeout(() => {
+                if (this.currentMinigame && this.currentMinigame.active) {
+                    this.advanceNarrative();
+                }
+            }, 1800);
         } else {
             // Progress feedback
             if (correctCount > 0) {
@@ -1408,6 +1442,86 @@ class GameEngine {
                 this.renderDialogue(s.name, "none of these are in the right order yet. rethink the sequence!", s.img, s.talkImg);
             }
         }
+    }
+
+    runTacticalStrike() {
+        const container = document.getElementById('mg-canvas-container');
+        document.getElementById('mg-instructions').textContent = "QUICK! ELIMINATE THE THREATS (🎯). SCORE 5 TO WIN.";
+        
+        let score = 0;
+        const spawn = () => {
+            if (!this.currentMinigame.active) return;
+            const target = document.createElement('div');
+            target.className = 'mg-strike-target';
+            target.textContent = '🎯';
+            target.style.left = (10 + Math.random() * 80) + '%';
+            target.style.top = (10 + Math.random() * 80) + '%';
+            
+            target.onclick = () => {
+                score++;
+                target.style.transform = 'scale(0) rotate(180deg)';
+                target.style.opacity = '0';
+                if (score >= 5) {
+                    this.finishMiniGame(true);
+                }
+                setTimeout(() => target.remove(), 300);
+            };
+
+            container.appendChild(target);
+            setTimeout(() => { if(target.parentNode) target.remove(); }, 1200); // Disappear after 1.2s
+            
+            if (this.currentMinigame.active) setTimeout(spawn, 1000);
+        };
+        spawn();
+    }
+
+    runAgreementPuzzle() {
+        const container = document.getElementById('mg-canvas-container');
+        document.getElementById('mg-instructions').textContent = "ESTABLISH PARTNERSHIPS. MATCH THE SYMBOLS (🤝).";
+        
+        const symbols = ['🤝', '🕊️', '📜', '⚖️'];
+        let items = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+        
+        const grid = document.createElement('div');
+        grid.className = 'mg-match-grid';
+        
+        let flipped = [];
+        let matches = 0;
+
+        items.forEach((sym, idx) => {
+            const card = document.createElement('div');
+            card.className = 'mg-match-card';
+            card.dataset.sym = sym;
+            card.innerHTML = `<span class="mg-sym" style="visibility:hidden">${sym}</span>`;
+            
+            card.onclick = () => {
+                if (!this.currentMinigame.active || flipped.length >= 2 || card.classList.contains('matched') || flipped.includes(card)) return;
+                
+                card.querySelector('.mg-sym').style.visibility = 'visible';
+                card.classList.add('flipped');
+                flipped.push(card);
+                
+                if (flipped.length === 2) {
+                    if (flipped[0].dataset.sym === flipped[1].dataset.sym) {
+                        flipped[0].classList.add('matched');
+                        flipped[1].classList.add('matched');
+                        matches++;
+                        flipped = [];
+                        if (matches === symbols.length) this.finishMiniGame(true);
+                    } else {
+                        setTimeout(() => {
+                            flipped.forEach(c => {
+                                c.querySelector('.mg-sym').style.visibility = 'hidden';
+                                c.classList.remove('flipped');
+                            });
+                            flipped = [];
+                        }, 600);
+                    }
+                }
+            };
+            grid.appendChild(card);
+        });
+        container.appendChild(grid);
     }
 
     runStabilizerGame() {
@@ -1449,6 +1563,7 @@ class GameEngine {
         this.currentMinigame.active = false;
         clearInterval(this.currentMinigame.timer);
         if (this.currentMinigame.commentInterval) clearInterval(this.currentMinigame.commentInterval);
+        if (this.winTimer) clearTimeout(this.winTimer);
 
         // Hide mini-game overlay immediately
         const mgOverlay = document.getElementById('minigame-overlay');
