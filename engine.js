@@ -15,8 +15,8 @@ class GameEngine {
         this.activeEvents = []; // This was also duplicated, keeping the original.
         this.predictions = []; // New
         this.globalStats = { pollution: 40, health: 60, economy: 60, stability: 60, sustainability: 45 }; // New
-        this.resources = { budget: 1000, power: 500, influence: 300 }; // Updated values
-        this.sdgProgress = 0; // New
+        this.resources = { budget: 1000, power: 500, food: 300 }; // Updated to Food
+        this.sdgProgress = 0; // Starts at 0, player must reach 100 to win
         
         this.chatState = { // New
             activeChar: null,
@@ -32,7 +32,7 @@ class GameEngine {
         
         // Track previous state for interactive dashboard animations
         this.prevResources = { ...this.resources };
-        this.prevStats = { pollution: 0, health: 0, economy: 0, progress: 0 };
+        this.prevStats = { progress: 0 };
         
         // Narrative / VN State
         this.narrative = {
@@ -307,9 +307,6 @@ class GameEngine {
 // document.getElementById('turn-counter').textContent = `Turn ${this.turn}/${this.maxTurns}`;
         
         const statsMap = {
-            'gs-pollution': { val: gs.pollution, prev: this.prevStats.pollution, isInverse: true },
-            'gs-health': { val: gs.health, prev: this.prevStats.health },
-            'gs-economy': { val: gs.economy, prev: this.prevStats.economy },
             'sdg': { val: sdg, prev: this.prevStats.progress }
         };
 
@@ -333,7 +330,7 @@ class GameEngine {
             }
         });
 
-        this.prevStats = { pollution: gs.pollution, health: gs.health, economy: gs.economy, progress: sdg };
+        this.prevStats.progress = sdg;
     }
 
     animateValue(obj, start, end, duration, suffix = "") {
@@ -622,8 +619,8 @@ class GameEngine {
         if (otherCosts.power && this.resources.power < otherCosts.power) { 
             this.showToast('danger', 'Insufficient Energy Grid Capacity!'); return; 
         }
-        if (otherCosts.influence && this.resources.influence < otherCosts.influence) { 
-            this.showToast('danger', 'Insufficient Global Influence!'); return; 
+        if (otherCosts.food && this.resources.food < otherCosts.food) { 
+            this.showToast('danger', 'Insufficient Global Food Supply!'); return; 
         }
 
         if (s.condition === 'conflict' && !r.crisis) { this.showToast('warning', 'War Commander requires conflict!'); return; }
@@ -632,7 +629,7 @@ class GameEngine {
         // Deduct resources
         this.resources.budget -= (capitalCost + (otherCosts.budget || 0));
         if (otherCosts.power) this.resources.power -= otherCosts.power;
-        if (otherCosts.influence) this.resources.influence -= otherCosts.influence;
+        if (otherCosts.food) this.resources.food -= otherCosts.food;
 
         s.isDeployed = true; // Mark as permanent asset
         s.deployed = regionId;
@@ -755,7 +752,7 @@ class GameEngine {
         // Passive recovery and drain
         this.resources.budget += 40;
         this.resources.power += 15;
-        this.resources.influence += 10;
+        this.resources.food += 10;
         
         this.regions.forEach(r => {
             const beh = GOV_BEHAVIORS[r.gov] || GOV_BEHAVIORS.democratic;
@@ -767,7 +764,17 @@ class GameEngine {
             }
         });
         
-        this.specialists.forEach(s => { if (s.cooldown > 0) s.cooldown--; s.deployed = null; });
+        this.specialists.forEach(s => { 
+            if (s.cooldown > 0) s.cooldown--; 
+            s.deployed = null;
+            // Recurring maintenance for all deployed assets
+            if (s.isDeployed && this.resources.budget >= s.maintenance) {
+                this.resources.budget -= s.maintenance;
+            } else if (s.isDeployed) {
+                // Out of budget - specialist temporary offline/reset?
+                this.showToast('warning', `Maintenance failed for ${s.name}.`);
+            }
+        });
         
         this.generateEvent();
         this.updateAllUI();
@@ -1147,15 +1154,15 @@ class GameEngine {
             this.showToast('danger', `Insufficient Energy Grid Capacity (Need ${s.costs.power}P)`); 
             return; 
         }
-        if (s.costs.influence && this.resources.influence < s.costs.influence) { 
-            this.showToast('danger', `Insufficient Global Influence (Need ${s.costs.influence}I)`); 
+        if (s.costs.food && this.resources.food < s.costs.food) { 
+            this.showToast('danger', `Insufficient Global Food Supply (Need ${s.costs.food} Food)`); 
             return; 
         }
 
         // Deduct resources
         this.resources.budget -= (s.costs.budget || 0);
         this.resources.power -= (s.costs.power || 0);
-        this.resources.influence -= (s.costs.influence || 0);
+        this.resources.food -= (s.costs.food || 0);
         
         // Put on cooldown
         s.cooldown = s.cooldownMax;
@@ -1255,6 +1262,9 @@ class GameEngine {
             if (success) {
                 r.crisis = null;
                 this.activeEvents = this.activeEvents.filter(e => String(e.id) !== String(ev.id));
+                // Active resolution increments SDG progress
+                this.sdgProgress = Math.min(100, this.sdgProgress + 3);
+                this.checkGameState();
             }
         }
         this.updateAllUI();
@@ -1759,7 +1769,10 @@ class GameEngine {
         if (success) {
             region.crisis = null;
             this.activeEvents = this.activeEvents.filter(e => String(e.id) !== String(ev.id));
+            // Specialist success provides high SDG progress
+            this.sdgProgress = Math.min(100, this.sdgProgress + 5);
             this.showToast('success', `${s.name} resolved the crisis!`);
+            this.checkGameState();
         } else {
             this.showToast('warning', `${s.name}'s intervention failed.`);
         }
@@ -1782,7 +1795,7 @@ class GameEngine {
 
     // ---- HELPERS ----
     renderEffects(eff) {
-        const labels = { budget: 'World Bank', power: 'Energy', influence: 'Influence' };
+        const labels = { budget: 'World Bank', power: 'Energy', food: 'Food' };
         return Object.entries(eff).map(([k,v]) => {
             const label = labels[k] || k.toUpperCase();
             return `<span class="effect-tag ${v>=0?'positive':'negative'}">${label} ${v>=0?'+'+v:v}</span>`;
@@ -1794,8 +1807,7 @@ class GameEngine {
         return { pollution: avg('pollution'), health: avg('health'), economy: avg('economy') };
     }
     getSDGScore() {
-        const total = this.regions.reduce((a,r) => a + (r.stats.health + r.stats.economy + r.stats.stability + (100 - r.stats.pollution))/4, 0);
-        return Math.round(total / this.regions.length);
+        return this.sdgProgress;
     }
     showToast(type, msg) {
         const container = document.getElementById('toast-container');
@@ -1814,8 +1826,12 @@ class GameEngine {
     }
     checkGameState() {
         const score = this.getSDGScore();
-        if (this.turn >= this.maxTurns) {
-            this.showGameOver(score >= 85);
+        if (score >= 100) {
+            this.gameOver = true;
+            this.showGameOver(true);
+        } else if (this.turn >= this.maxTurns) {
+            this.gameOver = true;
+            this.showGameOver(false); // Failed to reach 100% in 40 turns
         }
     }
     showGameOver(won) {

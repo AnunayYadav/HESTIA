@@ -52,7 +52,7 @@ const SPECIALISTS = [
         talkImg: 'Character/6 sages/War Commander (Virdis)/Neutral Talk Sprite.png', 
         desc:'The klutzy commander with a frighteningly high battle IQ. She remembers the name of every soldier she couldn\'t save.', 
         statBoost:{stability:20}, statDrain:{economy:-5}, cooldownMax:3, cooldown:0, deployed:null, condition:'conflict', 
-        costs: {influence: 40, budget: 40}, 
+        costs: {food: 40, budget: 40}, 
         deploymentCost: 500, maintenance: 120,
         baseStats: { int: 88, per: 40, lea: 98, res: 95 },
         pros: ['Absolute martial authority', 'Instant conflict resolution', 'Unrivaled tactical insight'],
@@ -90,7 +90,7 @@ const SPECIALISTS = [
         talkImg: 'Character/6 sages/Social Reformer (Carmine)/Talk State.png', 
         desc:'The noble who resigned for the people. Demanding, regal, yet fiercely protective of those under her command.', 
         statBoost:{stability:10,economy:5}, statDrain:{}, cooldownMax:2, cooldown:0, deployed:null, condition:null, 
-        costs: {influence: 25, budget: 20}, 
+        costs: {food: 25, budget: 20}, 
         deploymentCost: 150, maintenance: 30,
         baseStats: { int: 75, per: 97, lea: 90, res: 82 },
         pros: ['Prevents civil unrest', 'High diplomatic influence', 'Lowers regional corruption'],
@@ -109,7 +109,7 @@ const SPECIALISTS = [
         talkImg: 'Character/6 sages/Ecologist (Maris)/Talk Sprite.png', 
         desc:'A timid soul with a vast knowledge of the natural world. She speaks for the trees and the life they harbor.', 
         statBoost:{pollution:-15,sustainability:10}, statDrain:{}, cooldownMax:2, cooldown:0, deployed:null, condition:null, 
-        costs: {influence: 15, budget: 40}, 
+        costs: {food: 15, budget: 40}, 
         deploymentCost: 250, maintenance: 55,
         baseStats: { int: 82, per: 65, lea: 40, res: 90 },
         pros: ['Major pollution reduction', 'Reverses habitat loss', 'High public sympathy'],
@@ -163,7 +163,7 @@ const EVENT_TEMPLATES = [
         learningFact:'SDG 8 promotes "Decent Work and Economic Growth." Balanced fiscal policy prevents systemic poverty and keeps societies stable.',
         sdgTarget:'SDG 8 (Decent Work)', severity:'high',
         options:[
-            { text:'Market Intervention', effects:{economy:10,stability:-15,health:-5}, cost:{influence:50}, tags:[{t:'Economy +10',c:'positive'},{t:'Stability -15',c:'negative'}] }
+            { text:'Market Intervention', effects:{economy:10,stability:-15,health:-5}, cost:{food:50}, tags:[{t:'Economy +10',c:'positive'},{t:'Stability -15',c:'negative'}] }
         ], hestia:'Wealth is ephemeral, but poverty is persistent. Command the markets or they will command you.', spreads:'economy' 
     },
     { 
@@ -212,14 +212,14 @@ const INTRO_DIALOGUES = [
     "Mortal... I am Hestia, Goddess of Balance. Welcome to the Aegis.",
     "The world is fractured, its scales broken. I have summoned you to be the arbiter of its fate.",
     "As Controller of the World Government, you possess tools no nation can match—but your resources are finite.",
-    "Manage your World Bank, Energy Grid, and Global Influence carefully. The weight of 40 turns will decide everything.",
+    "Manage your World Bank, Energy Grid, and Global Food Supply carefully. The weight of 40 turns will decide everything.",
     "My specialists await your command. Virdis for the front lines, Carmine for the halls of power, Celsius for the future...",
     "Observe. Predict. Act. Or watch the silence of the void swallow this world."
 ];
 
 const TUTORIAL_STEPS = [
-    { icon:'📊', title:'Resource Management', text:'World Bank (💰), Energy (⚡), and Influence (🥖) are your lifeblood. Every action—deploying specialists or making decisions—costs resources. If you run out, you cannot intervene.' },
+    { icon:'📊', title:'Resource Management', text:'World Bank (💰), Energy (⚡), and Food (🍎) are your lifeblood. Every action—deploying specialists or making decisions—costs resources. If you run out, you cannot intervene.' },
     { icon:'🔮', title:'Predictions', text:'Watch the Right Panel. It contains warnings of impending crises. An epidemic in one region WILL spread to neighbors unless halted. Use this foresight to pre-emptively deploy specialists.' },
     { icon:'🎮', title:'Mini-Games', text:'Responding to major crises now triggers intervention mini-games. Your performance in these determines how effective the resolution is. High skill saves resources and lives.' },
-    { icon:'⏳', title:'The 40-Turn Count', text:'You have exactly 40 turns to bring the world into balance. Each turn represents significant global shift. The SDG progress meter must reach 85% by the final turn.' }
+    { icon:'⏳', title:'The 40-Turn Count', text:'You have exactly 40 turns to bring the world into balance. Each turn represents significant global shift. The SDG progress meter must reach 100% by the final turn to trigger the Golden Age.' }
 ];
