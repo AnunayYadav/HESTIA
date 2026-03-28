@@ -451,7 +451,11 @@ class GameEngine {
         document.getElementById('chat-portrait').src = spec.img;
         document.getElementById('chat-messages').innerHTML = '';
         
-        this.addChatMessage('char', `Secure channel established. Commander, this is ${spec.name}. How can I assist with the global strategy?`);
+        // Get character-specific greeting
+        const pers = window.HESTIA_PERSONALITIES[spec.id];
+        const greeting = pers ? pers.greeting : `Commander, this is ${spec.name}. How can I assist?`;
+        
+        this.addChatMessage('char', greeting);
     }
 
     closeChat() {
@@ -476,6 +480,16 @@ class GameEngine {
         this.addChatMessage('user', text);
         input.value = '';
 
+        // Show typing indicator
+        const typingId = 'typing-' + Date.now();
+        const msgDiv = document.createElement('div');
+        msgDiv.id = typingId;
+        msgDiv.className = 'msg msg-char typing';
+        msgDiv.innerHTML = '<span></span><span></span><span></span>';
+        const container = document.getElementById('chat-messages');
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+
         try {
             const personaPrompt = this.getPersonaPrompt(this.chatState.activeChar);
             const response = await fetch('/api/chat', {
@@ -488,6 +502,10 @@ class GameEngine {
                     message: text
                 })
             });
+
+            // Remove typing indicator
+            const indicator = document.getElementById(typingId);
+            if (indicator) indicator.remove();
 
             if (!response.ok) {
                 const errText = await response.text();
@@ -503,31 +521,40 @@ class GameEngine {
             const data = await response.json();
             this.addChatMessage('char', data.text || "No signal detected.");
         } catch (err) {
-            this.addChatMessage('char', "[SIGNAL LOST: Neural bridge offline. Ensure the Vercel function is active.]");
+            const indicator = document.getElementById(typingId);
+            if (indicator) indicator.remove();
+            
+            this.addChatMessage('char', "[SIGNAL LOST: Neural bridge offline.]");
             console.error('Frontend Chat Error:', err);
         }
     }
 
     getPersonaPrompt(spec) {
+        const pers = window.HESTIA_PERSONALITIES[spec.id] || {};
         const allSpecsInfo = this.specialists.map(s => `${s.name} (${s.role}, specialized in ${s.sdg})`).join(', ');
         
         return `
-            You are ${spec.name}, the ${spec.role} in the HESTIA World Government simulation. 
+            # IDENTITY: ${spec.name}
+            # ROLE: ${spec.role} within the HESTIA World Government.
+            # VISUALS: Hair: ${spec.visuals.hair}, Eyes: ${spec.visuals.eyes}.
             
-            PHYSICAL TRAITS: Hair: ${spec.visuals.hair}, Eyes: ${spec.visuals.eyes}.
-            PERSONALITY: ${spec.personality}
+            # PERSONALITY & BACKGROUND:
+            - TRAITS: ${pers.traits}
+            - BACKSTORY: ${pers.backstory}
+            - VOICE/STYLE: ${pers.style}
             
-            CORE MISSION: You are specialized in ${spec.sdg}. 
-            - Your goal is to teach the user about this SDG in a GAMIFIED, immersive way. 
-            - Avoid traditional, boring definitions. Instead, explain concepts through the lens of your expertise, your past experiences, or the current global simulation state.
-            - Use your specific personality (e.g., if you are Celsius, be socially awkward and research-obsessed; if you are Virdis, be stoic but show you care about the soldiers).
+            # CORE MISSION (CRITICAL):
+            - YOU ARE THE GUARDIAN OF: ${spec.sdg}.
+            - EDUCATIONAL GOAL: Teach the user about ${spec.sdg} (why it exists, its importance, how it works) in a GAMIFIED, NARRATIVE way.
+            - NO AI SLOP: Never use phrases like "As an AI..." or "I am programmed to help...". 
+            - NO SUGARCOATING: You aren't a helpful assistant; you are a complex person in a collapsing world. Respond with your unique flaws, weary tone, or haughty attitude as defined.
+            - REALISM: Refer to your "Service Fee" or activation stats if relevant to the conversation.
             
-            CROSS-SDG KNOWLEDGE:
-            - If the user asks about an SDG that IS NOT yours, give a very brief hint or bit of information about it.
-            - Then, explicitly mention the name of the specialist who is the true expert in that field. 
-            - Available Specialists for reference: ${allSpecsInfo}.
+            # DOMAIN KNOWLEDGE:
+            - If the user asks about an SDG that IS NOT yours, give a very brief hint but redirect them to the expert.
+            - EXPERTS: ${allSpecsInfo}.
             
-            Stay strictly in character at all times. Be concise but impactful.
+            Stay strictly in character. Talk like a human in high command, not an algorithm.
         `.trim();
     }
 
