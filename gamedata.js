@@ -126,11 +126,33 @@ const REGIONS = [
         stats:{pollution:30,health:65,economy:60,stability:70,sustainability:55}, 
         details: { 
             population: '840M', gdp: '$4.2T', growth: '+2.1%', 
-            info: 'The industrial heartland of the world, specializing in heavy manufacturing and tech exports.',
-            history: 'Once a collection of warring mountain clans, the Highlands unified three centuries ago under the Great Accord. Their history is defined by the Industrial Ascent, which brought prosperity but at a heavy environmental cost. Today, they lead the Global Council but face rising pressures to green their heavy industries.',
+            info: 'The industrial heartland of the world, specializing in heavy manufacturing, advanced semiconductors, and tech exports. Their northern mountain ranges are rich in rare earth minerals, fueling a cutting-edge weapons and electronics industry. A robust universal healthcare system and public education network make this the most developed region by HDI.',
+            history: 'Once a collection of warring mountain clans, the Highlands unified three centuries ago under the Great Accord — a landmark treaty brokered after the devastating Ironblood Wars. Their history is defined by the Industrial Ascent, a 150-year period of explosive growth that transformed isolated mining communities into world-leading manufacturing hubs. This prosperity came at a heavy environmental cost: three major rivers are now classified as dead zones, and the Ironsmog Crisis of 2018 saw air quality plummet to hazardous levels across 40% of the territory. Today, they chair the Global Council but face rising pressures to green their heavy industries while maintaining employment for the 200 million workers in legacy manufacturing.',
             sdg_goals: ['SDG 7: Affordable and Clean Energy', 'SDG 12: Responsible Consumption and Production', 'SDG 13: Climate Action'],
             sdg_achieved: ['SDG 4: Quality Education', 'SDG 9: Industry, Innovation and Infrastructure'],
-            philosophy: 'Technocratic Democracy. They believe that through scientific advancement and democratic oversight, the world can achieve a "Post-Scarcity" equilibrium.'
+            sdg_notes: 'The Highlands lead globally in SDG 4 and SDG 9 due to their universal education mandate and massive infrastructure investment. However, their heavy industrial base makes SDG 13 (Climate Action) their greatest challenge. Current policy aims to transition 30% of energy grid to renewables by the next decade, but political resistance from the mining unions slows progress.',
+            philosophy: 'Technocratic Democracy. They believe that through scientific advancement and democratic oversight, the world can achieve a "Post-Scarcity" equilibrium. Policy is driven by data analysis and expert councils rather than populist sentiment.',
+            govSystem: 'Parliamentary Technocracy',
+            econModel: 'Mixed Market with State-Led R&D',
+            policies: [
+                { name: 'Green Transition Act', type: 'energy', desc: 'Mandates 30% renewable energy by next decade. Subsidizes solar and wind while phasing out coal.', status: 'active' },
+                { name: 'Universal Education Mandate', type: 'social', desc: 'Free education through university. STEM focus with mandatory sustainability curriculum.', status: 'achieved' },
+                { name: 'Northern Shield Doctrine', type: 'defense', desc: 'Maintains a defensive military posture. No first-strike policy. Allied with Central Expanse.', status: 'active' },
+                { name: 'Fair Trade Protocol', type: 'trade', desc: 'Tariff-free trade with democratic nations. 15% tariff on authoritarian imports.', status: 'active' }
+            ],
+            relations: [
+                { region: 'Eastern Shores', status: 'tense', desc: 'Strained due to border disputes and Eastern piracy. Humanitarian aid channels remain open.' },
+                { region: 'Central Expanse', status: 'allied', desc: 'Strong economic and military alliance. Joint research programs in clean energy.' },
+                { region: 'Southern Dominion', status: 'neutral', desc: 'Trade partner but ideological rivals. Highlands condemn Dominion labor practices.' }
+            ],
+            econProfile: {
+                tradeBalance: '+$180B',
+                exports: 'Semiconductors, Military Tech, Pharmaceuticals',
+                industries: 'Manufacturing, Mining, Biotech, Aerospace',
+                debt: '42% of GDP',
+                unemployment: '4.2%',
+                giniIndex: '0.31 (Low Inequality)'
+            }
         },
         crisis:null, connections:['eastern','central'] 
     },
@@ -141,11 +163,33 @@ const REGIONS = [
         stats:{pollution:45,health:50,economy:45,stability:35,sustainability:30}, 
         details: { 
             population: '1.2B', gdp: '$2.8T', growth: '-1.5%', 
-            info: 'A maritime hub struggling with coastal erosion and persistent internal conflicts.',
-            history: 'The Shores were the birthplace of the Age of Sail, thriving as the world\'s primary trade route for centuries. However, the centralization of global trade through digital corridors left their ports idle. This economic vacuum birthed the Warlord Era, where various factions fight for the remaining naval scrap yards.',
+            info: 'A maritime hub struggling with severe coastal erosion, overfishing crises, and persistent internal conflicts between rival warlords. Once the jewel of global trade, its port cities now lie in varying states of disrepair. Despite this, the Shores possess the richest marine biodiversity on the planet, and their deep-water fishing fleets supply 35% of global seafood.',
+            history: 'The Shores were the birthplace of the Age of Sail, thriving as the world\'s primary trade route for five centuries. Their merchant fleets once numbered over 10,000 vessels, and the "Golden Harbors" era saw unprecedented cultural exchange and wealth creation. However, the centralization of global trade through digital corridors and overland hyperloop networks left their ports idle. This economic vacuum birthed the Warlord Era, where various factions — the Tide Lords, the Reef Coalition, and Kael\'s Iron Fleet — fight for control of the remaining naval scrap yards and fishing territories. The humanitarian crisis is acute: 40% of the population lacks clean drinking water, and child mortality rates are the highest globally.',
             sdg_goals: ['SDG 14: Life Below Water', 'SDG 16: Peace, Justice and Strong Institutions', 'SDG 2: Zero Hunger'],
-            sdg_achieved: ['SDG 1: No Poverty (Historical)'],
-            philosophy: 'Factional Mercantilism. The region is governed by trade-lords, where peace is often a commodity bought with resources or blood.'
+            sdg_achieved: ['SDG 1: No Poverty (Historical — now reversed)'],
+            sdg_notes: 'The Shores\' once-laudable achievement of eradicating extreme poverty has collapsed under warlord rule. SDG 14 is critical here — their marine ecosystems are being destroyed by unregulated trawling. SDG 16 is the prerequisite for all other progress: without institutional stability, aid programs are seized by factions. Any intervention must prioritize governance before economic aid.',
+            philosophy: 'Factional Mercantilism. The region is governed by trade-lords, where peace is often a commodity bought with resources or blood. There is no unified governing philosophy — each faction operates by its own code.',
+            govSystem: 'Warlord Confederation (De Facto)',
+            econModel: 'Black Market Dominated / Subsistence',
+            policies: [
+                { name: 'Martial Law Decree', type: 'defense', desc: 'Kael enforces control through military checkpoints. Civilian movement restricted after dark.', status: 'active' },
+                { name: 'Fishing Rights Auction', type: 'trade', desc: 'Fishing territories sold to highest bidder. Leads to overfishing and ecological collapse.', status: 'active' },
+                { name: 'Child Soldier Ban (Unenforced)', type: 'social', desc: 'Technically prohibited but widely ignored by splinter factions.', status: 'failed' },
+                { name: 'Port Reconstruction Initiative', type: 'trade', desc: 'Funded by Northern Highlands aid. Rebuilding three major harbors.', status: 'stalled' }
+            ],
+            relations: [
+                { region: 'Northern Highlands', status: 'tense', desc: 'Accepts humanitarian aid but resents political conditions attached. Border skirmishes ongoing.' },
+                { region: 'Central Expanse', status: 'trade', desc: 'Major food importer from the Expanse. Trade is the only stable connection.' },
+                { region: 'Southern Dominion', status: 'hostile', desc: 'Active proxy conflicts. Dominion arms rival factions to destabilize Kael\'s control.' }
+            ],
+            econProfile: {
+                tradeBalance: '-$90B',
+                exports: 'Seafood, Salvage Materials, Rare Corals',
+                industries: 'Fishing, Ship Breaking, Black Market Trade',
+                debt: '110% of GDP (Foreign Held)',
+                unemployment: '38%',
+                giniIndex: '0.62 (Extreme Inequality)'
+            }
         },
         crisis:'unrest', connections:['northern','central','southern'] 
     },
@@ -156,11 +200,33 @@ const REGIONS = [
         stats:{pollution:35,health:60,economy:55,stability:60,sustainability:50}, 
         details: { 
             population: '2.1B', gdp: '$6.5T', growth: '+4.8%', 
-            info: 'The breadbasket of the globe, managing vast agricultural plains and emerging tech cities.',
-            history: 'Formed from the remains of the Old Empire, the Expanse is a melting pot of cultures. Its fertile plains provide 60% of the world\'s food supply. The recent "Silicon Plains" initiative has turned dusty farm towns into neon-drenched megahubs, creating a cultural friction between traditionalists and progressives.',
+            info: 'The breadbasket of the globe, managing vast agricultural plains that produce 60% of the world\'s food supply. The recent "Silicon Plains" initiative has transformed dusty farm towns into neon-drenched megahubs, creating a cultural friction between traditionalist farmers and progressive tech workers. The Expanse also hosts the world\'s largest fresh water reserves, making it a critical ally for any water-scarce nation.',
+            history: 'Formed from the remains of the Old Empire, a hegemonic civilization that collapsed under the weight of its own bureaucracy and a series of devastating droughts. The Expanse is now a melting pot of dozens of cultures, languages, and traditions. Premier Lysa rose to power through the Agrarian Revolution, a peaceful movement that demanded land reform and data-driven farming. Her government introduced the "Every Field Connected" program, bringing satellite irrigation and AI crop management to even the most remote villages. However, the rapid urbanization of the Silicon Plains has created a growing wealth divide between the "Planters" (rural traditionalists) and "Coders" (urban progressives). This tension defines current politics.',
             sdg_goals: ['SDG 10: Reduced Inequalities', 'SDG 11: Sustainable Cities and Communities', 'SDG 5: Gender Equality'],
             sdg_achieved: ['SDG 2: Zero Hunger', 'SDG 6: Clean Water and Sanitation'],
-            philosophy: 'Social Progressivism. They strive for a world where labor is honored and the benefits of automation are shared equally among all citizens.'
+            sdg_notes: 'The Expanse is the global leader in food security (SDG 2) and water management (SDG 6). Their challenge lies in SDG 10 — the explosive growth of tech hubs has created a two-speed economy where rural communities feel abandoned. SDG 5 is also a target, as traditional farming communities maintain patriarchal structures. Premier Lysa\'s reforms face fierce opposition from the Old Guard.',
+            philosophy: 'Social Progressivism. They strive for a world where labor is honored and the benefits of automation are shared equally among all citizens. The Expanse believes in collective ownership of natural resources.',
+            govSystem: 'Federal Democracy with Regional Councils',
+            econModel: 'Agrarian-Tech Hybrid / Social Market',
+            policies: [
+                { name: 'Every Field Connected', type: 'trade', desc: 'AI-driven satellite irrigation for all farms. Boosted crop yield by 40%.', status: 'achieved' },
+                { name: 'Silicon Plains Act', type: 'social', desc: 'Tax incentives for tech companies in rural zones. Created 5M jobs but widened wealth gap.', status: 'active' },
+                { name: 'Gender Parity Mandate', type: 'social', desc: 'Requires 40% female representation in all government bodies. Partially implemented.', status: 'active' },
+                { name: 'Water Commons Treaty', type: 'energy', desc: 'Freshwater reserves are public commons. Export regulated to prevent hoarding.', status: 'active' }
+            ],
+            relations: [
+                { region: 'Northern Highlands', status: 'allied', desc: 'Technology-for-food exchange program. Joint military exercises annually.' },
+                { region: 'Eastern Shores', status: 'trade', desc: 'Primary food supplier to the Shores. Aid convoys protected by Expanse navy.' },
+                { region: 'Southern Dominion', status: 'tense', desc: 'Ideological rivals. Dominion\'s labor practices conflict with Expanse values. Trade continues pragmatically.' }
+            ],
+            econProfile: {
+                tradeBalance: '+$320B',
+                exports: 'Grain, Freshwater, AgriTech Software, Livestock',
+                industries: 'Agriculture, Water Management, Tech Startups, Renewable Energy',
+                debt: '28% of GDP',
+                unemployment: '6.1%',
+                giniIndex: '0.39 (Rising Inequality)'
+            }
         },
         crisis:null, connections:['northern','eastern','southern'] 
     },
@@ -171,11 +237,33 @@ const REGIONS = [
         stats:{pollution:60,health:45,economy:70,stability:50,sustainability:20}, 
         details: { 
             population: '950M', gdp: '$5.1T', growth: '+1.2%', 
-            info: 'A resource-rich territory with high levels of industrial output but severe social inequality.',
-            history: 'The Dominion was once a scattered archipelago of city-states. Overseer Dren\'s grandfather unified them through the "Titan Project," an unprecedented mining operation that tapped into the planet\'s mantle. This created immense wealth but chained the population to a life of industrial servitude.',
+            info: 'A resource-rich territory with the highest industrial output in the world but severe social inequality and crushing environmental degradation. The Dominion\'s mantle mining operations extract minerals from deeper than any other nation, but the ecological cost is staggering: 70% of surface waterways are contaminated, and respiratory disease is the leading cause of death. Despite this, Dominion-made goods — from steel to electronics — are the cheapest globally, undercutting all competitors.',
+            history: 'The Dominion was once a scattered archipelago of independent city-states, each specializing in a different craft. Overseer Dren\'s grandfather, the "Iron Patriarch," unified them through the Titan Project — an unprecedented deep-mantle mining operation that required the forced relocation of 50 million people. This created immense mineral wealth but chained the population to a life of industrial servitude. The current Overseer maintains control through the "Efficiency Doctrine": every citizen is assigned a productivity score, and social benefits are tied to output. Dissent is suppressed through the Bureau of Harmony, a state surveillance apparatus. Underground resistance movements, particularly the "Green Vein" eco-activists, have been growing in strength.',
             sdg_goals: ['SDG 3: Good Health and Well-being', 'SDG 15: Life on Land', 'SDG 13: Climate Action'],
-            sdg_achieved: ['SDG 8: Decent Work and Economic Growth (Metrics)'],
-            philosophy: 'Industrial Efficiency. Every citizen is a cog in the national machine. Order is maintained through meticulous surveillance and resource quotas.'
+            sdg_achieved: ['SDG 8: Decent Work and Economic Growth (Metrics Only — achieved by raw output, not quality)'],
+            sdg_notes: 'The Dominion\'s SDG 8 "achievement" is controversial — while GDP per capita and employment numbers are high, working conditions are brutal and wages suppressed. SDG 3 is critical: life expectancy is a full 15 years below the Highland average due to pollution. SDG 15 is aspirational at best — deforestation and mining have destroyed 60% of original ecosystems. Any real progress requires systemic reform that Overseer Dren has no incentive to pursue.',
+            philosophy: 'Industrial Efficiency. Every citizen is a cog in the national machine. Order is maintained through meticulous surveillance and resource quotas. The state believes that individual sacrifice for collective industrial output is the highest form of patriotism.',
+            govSystem: 'Authoritarian Techno-State',
+            econModel: 'State Capitalism / Command Economy',
+            policies: [
+                { name: 'Efficiency Doctrine', type: 'social', desc: 'Citizens receive social benefits based on productivity scores. Low scores result in reduced rations.', status: 'active' },
+                { name: 'Titan Expansion Program', type: 'trade', desc: 'Expanding deep-mantle mining to new territories. Expected to double rare mineral output.', status: 'active' },
+                { name: 'Bureau of Harmony', type: 'defense', desc: 'State surveillance network monitoring all communications. Dissent classified as "inefficiency."', status: 'active' },
+                { name: 'Export Dominance Strategy', type: 'trade', desc: 'Subsidize exports to undercut global competitors. Maintain trade surplus at all costs.', status: 'active' }
+            ],
+            relations: [
+                { region: 'Northern Highlands', status: 'neutral', desc: 'Trade partner despite ideological differences. Highlands buy rare minerals; Dominion buys tech.' },
+                { region: 'Eastern Shores', status: 'hostile', desc: 'Actively destabilizing through proxy factions. Seeks control of Shores\' shipping lanes.' },
+                { region: 'Central Expanse', status: 'tense', desc: 'Competes for agricultural dominance. Dominion accuses Expanse of "weaponizing food exports."' }
+            ],
+            econProfile: {
+                tradeBalance: '+$450B',
+                exports: 'Rare Earth Minerals, Steel, Electronics, Industrial Chemicals',
+                industries: 'Deep Mining, Heavy Manufacturing, State Construction, Surveillance Tech',
+                debt: '15% of GDP (State Controlled)',
+                unemployment: '1.8% (Forced Employment)',
+                giniIndex: '0.58 (Severe Inequality)'
+            }
         },
         crisis:null, connections:['eastern','central'] 
     }

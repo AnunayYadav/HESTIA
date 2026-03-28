@@ -715,22 +715,246 @@ class GameEngine {
         if (!r) return;
 
         const modal = document.getElementById('detailed-country-modal');
-        modal.classList.add('visible'); // Use visible or display:flex
+        modal.classList.add('visible');
         modal.style.display = 'flex';
 
+        const d = r.details || {};
+
+        // --- Header ---
         document.getElementById('dm-flag').src = `Country/${encodeURIComponent(r.name)}/FLAG.jpeg`;
         document.getElementById('dm-name').textContent = r.name;
         document.getElementById('dm-leader').textContent = r.leader;
-        document.getElementById('dm-gov-detailed').textContent = r.gov.toUpperCase();
+        document.getElementById('dm-leader-desc').textContent = r.leaderPersonality;
         
-        const d = r.details || { population: 'Unknown', gdp: 'Unknown', growth: 'Unknown', info: 'No dossier available.' };
-        document.getElementById('dm-pop').textContent = d.population;
-        document.getElementById('dm-gdp').textContent = d.gdp;
-        document.getElementById('dm-growth').textContent = d.growth;
-        document.getElementById('dm-info').textContent = d.info;
+        const govBadge = document.getElementById('dm-gov-detailed');
+        govBadge.textContent = r.gov.toUpperCase();
+        govBadge.className = 'dm-gov-badge dm-gov-' + r.gov;
 
-        // Reset SDG tags based on region focus if needed (static for now)
+        // Status tag based on crisis
+        const statusTag = document.getElementById('dm-status-tag');
+        if (r.crisis) {
+            statusTag.innerHTML = '<span class="dm-status-dot crisis"></span>CRISIS';
+            statusTag.className = 'dm-status-indicator crisis';
+        } else {
+            const avg = (r.stats.health + r.stats.economy + r.stats.stability + (100 - r.stats.pollution)) / 4;
+            if (avg >= 60) {
+                statusTag.innerHTML = '<span class="dm-status-dot stable"></span>STABLE';
+                statusTag.className = 'dm-status-indicator stable';
+            } else {
+                statusTag.innerHTML = '<span class="dm-status-dot warning"></span>AT RISK';
+                statusTag.className = 'dm-status-indicator warning';
+            }
+        }
+
+        document.getElementById('dm-pop').textContent = d.population || '—';
+        document.getElementById('dm-gdp').textContent = d.gdp || '—';
+        document.getElementById('dm-growth').textContent = d.growth || '—';
+        document.getElementById('dm-turn-info').textContent = `TURN ${this.turn} / ${this.maxTurns}`;
+
+        // --- Overview Tab ---
+        document.getElementById('dm-info').textContent = d.info || 'No intelligence available.';
+
+        // Regional Vitals
+        const vitalsContainer = document.getElementById('dm-vitals');
+        vitalsContainer.innerHTML = '';
+        const statColors = {
+            pollution: { label: 'Pollution', color: '#ff4d4d', icon: '🏭', invert: true },
+            health: { label: 'Health', color: '#4dff88', icon: '❤️', invert: false },
+            economy: { label: 'Economy', color: '#e8a44a', icon: '💰', invert: false },
+            stability: { label: 'Stability', color: '#ffcc00', icon: '⚖️', invert: false },
+            sustainability: { label: 'Sustainability', color: '#f1c27d', icon: '🌱', invert: false }
+        };
+        Object.entries(statColors).forEach(([key, meta]) => {
+            const val = r.stats[key] || 0;
+            const item = document.createElement('div');
+            item.className = 'dm-vital-item';
+            item.innerHTML = `
+                <div class="dm-vital-header">
+                    <span class="dm-vital-icon">${meta.icon}</span>
+                    <span class="dm-vital-label">${meta.label}</span>
+                    <span class="dm-vital-value" style="color:${meta.color}">${val}</span>
+                </div>
+                <div class="dm-vital-bar-track">
+                    <div class="dm-vital-bar-fill" style="width:${val}%;background:${meta.color};box-shadow:0 0 8px ${meta.color}40"></div>
+                </div>
+            `;
+            vitalsContainer.appendChild(item);
+        });
+
+        // Strategic Assessment
+        const assessContainer = document.getElementById('dm-assessment');
+        assessContainer.innerHTML = '';
+        const strengths = [];
+        const threats = [];
+        if (r.stats.economy >= 60) strengths.push('Strong economic base');
+        if (r.stats.health >= 60) strengths.push('Robust healthcare system');
+        if (r.stats.stability >= 65) strengths.push('Political stability');
+        if (r.stats.sustainability >= 50) strengths.push('Sustainability initiatives');
+        if (r.stats.pollution <= 30) strengths.push('Low pollution levels');
+        if (r.stats.pollution >= 50) threats.push('Critical pollution levels');
+        if (r.stats.health < 50) threats.push('Healthcare system failing');
+        if (r.stats.stability < 40) threats.push('Political instability');
+        if (r.stats.economy < 45) threats.push('Economic decline');
+        if (r.crisis) threats.push(`Active crisis: ${r.crisis}`);
+        if (strengths.length === 0) strengths.push('No significant advantages detected');
+        if (threats.length === 0) threats.push('No immediate threats');
+
+        assessContainer.innerHTML = `
+            <div class="dm-assess-section">
+                <div class="dm-assess-label good"><i class="fas fa-arrow-up"></i> STRENGTHS</div>
+                ${strengths.map(s => `<div class="dm-assess-item good">${s}</div>`).join('')}
+            </div>
+            <div class="dm-assess-section">
+                <div class="dm-assess-label bad"><i class="fas fa-exclamation-triangle"></i> THREATS</div>
+                ${threats.map(t => `<div class="dm-assess-item bad">${t}</div>`).join('')}
+            </div>
+        `;
+
+        // --- History Tab ---
+        document.getElementById('dm-history').textContent = d.history || 'Archival records are unavailable.';
+        document.getElementById('dm-philosophy').textContent = d.philosophy || 'No governing philosophy on record.';
+        document.getElementById('dm-gov-system').textContent = d.govSystem || r.gov.toUpperCase();
+        document.getElementById('dm-econ-model').textContent = d.econModel || 'Unknown';
+
+        // --- SDG Tab ---
+        const SDG_DESCRIPTIONS = {
+            'SDG 1': 'End poverty in all its forms everywhere.',
+            'SDG 2': 'End hunger, achieve food security and improved nutrition.',
+            'SDG 3': 'Ensure healthy lives and promote well-being for all ages.',
+            'SDG 4': 'Ensure inclusive and equitable quality education.',
+            'SDG 5': 'Achieve gender equality and empower all women and girls.',
+            'SDG 6': 'Ensure availability and sustainable management of water.',
+            'SDG 7': 'Ensure access to affordable, reliable, sustainable energy.',
+            'SDG 8': 'Promote sustained, inclusive economic growth and decent work.',
+            'SDG 9': 'Build resilient infrastructure, promote inclusive industrialization.',
+            'SDG 10': 'Reduce inequality within and among countries.',
+            'SDG 11': 'Make cities and settlements inclusive, safe, and sustainable.',
+            'SDG 12': 'Ensure sustainable consumption and production patterns.',
+            'SDG 13': 'Take urgent action to combat climate change.',
+            'SDG 14': 'Conserve and sustainably use oceans, seas, and marine resources.',
+            'SDG 15': 'Protect, restore, and promote sustainable use of land ecosystems.',
+            'SDG 16': 'Promote peaceful and inclusive societies for sustainable development.',
+            'SDG 17': 'Strengthen the means of implementation and revitalize partnerships.'
+        };
+
+        const SDG_ICONS = {
+            'SDG 1': '🏚️', 'SDG 2': '🌾', 'SDG 3': '💊', 'SDG 4': '📚',
+            'SDG 5': '♀️', 'SDG 6': '💧', 'SDG 7': '⚡', 'SDG 8': '📈',
+            'SDG 9': '🏗️', 'SDG 10': '⚖️', 'SDG 11': '🏙️', 'SDG 12': '♻️',
+            'SDG 13': '🌡️', 'SDG 14': '🐟', 'SDG 15': '🌳', 'SDG 16': '🕊️',
+            'SDG 17': '🤝'
+        };
+
+        const achievedContainer = document.getElementById('dm-sdg-achieved');
+        achievedContainer.innerHTML = '';
+        (d.sdg_achieved || []).forEach(sdg => {
+            const sdgKey = sdg.match(/SDG \d+/)?.[0] || '';
+            const card = document.createElement('div');
+            card.className = 'dm-sdg-card achieved';
+            card.innerHTML = `
+                <div class="dm-sdg-card-icon">${SDG_ICONS[sdgKey] || '✅'}</div>
+                <div class="dm-sdg-card-content">
+                    <div class="dm-sdg-card-title">${sdg}</div>
+                    <div class="dm-sdg-card-desc">${SDG_DESCRIPTIONS[sdgKey] || ''}</div>
+                </div>
+                <div class="dm-sdg-badge achieved">ACHIEVED</div>
+            `;
+            achievedContainer.appendChild(card);
+        });
+
+        const goalsContainer = document.getElementById('dm-sdg-goals');
+        goalsContainer.innerHTML = '';
+        (d.sdg_goals || []).forEach(sdg => {
+            const sdgKey = sdg.match(/SDG \d+/)?.[0] || '';
+            const card = document.createElement('div');
+            card.className = 'dm-sdg-card active';
+            card.innerHTML = `
+                <div class="dm-sdg-card-icon">${SDG_ICONS[sdgKey] || '🎯'}</div>
+                <div class="dm-sdg-card-content">
+                    <div class="dm-sdg-card-title">${sdg}</div>
+                    <div class="dm-sdg-card-desc">${SDG_DESCRIPTIONS[sdgKey] || ''}</div>
+                </div>
+                <div class="dm-sdg-badge active">IN PROGRESS</div>
+            `;
+            goalsContainer.appendChild(card);
+        });
+
+        document.getElementById('dm-sdg-notes').textContent = d.sdg_notes || 'No strategic analysis available.';
+
+        // --- Policies Tab ---
+        const policiesContainer = document.getElementById('dm-policies');
+        policiesContainer.innerHTML = '';
+        (d.policies || []).forEach(p => {
+            const typeIcons = { energy: '⚡', social: '👥', defense: '🛡️', trade: '📦' };
+            const statusColors = { active: 'var(--accent-gold)', achieved: 'var(--accent-green)', failed: 'var(--accent-red)', stalled: 'var(--accent-yellow)' };
+            const el = document.createElement('div');
+            el.className = 'dm-policy-item';
+            el.innerHTML = `
+                <div class="dm-policy-icon">${typeIcons[p.type] || '📋'}</div>
+                <div class="dm-policy-info">
+                    <div class="dm-policy-name">${p.name}</div>
+                    <div class="dm-policy-desc">${p.desc}</div>
+                </div>
+                <div class="dm-policy-status" style="color:${statusColors[p.status] || '#fff'}">${p.status.toUpperCase()}</div>
+            `;
+            policiesContainer.appendChild(el);
+        });
+
+        // Diplomatic Relations
+        const relationsContainer = document.getElementById('dm-relations');
+        relationsContainer.innerHTML = '';
+        (d.relations || []).forEach(rel => {
+            const statusColors = { allied: '#4dff88', trade: '#f1c27d', neutral: '#ffcc00', tense: '#ff9f4d', hostile: '#ff3366' };
+            const statusIcons = { allied: '🤝', trade: '📦', neutral: '😐', tense: '⚠️', hostile: '⚔️' };
+            const el = document.createElement('div');
+            el.className = 'dm-relation-item';
+            el.innerHTML = `
+                <div class="dm-relation-header">
+                    <span class="dm-relation-icon">${statusIcons[rel.status] || '❓'}</span>
+                    <span class="dm-relation-name">${rel.region}</span>
+                    <span class="dm-relation-status" style="color:${statusColors[rel.status]}">${rel.status.toUpperCase()}</span>
+                </div>
+                <div class="dm-relation-desc">${rel.desc}</div>
+            `;
+            relationsContainer.appendChild(el);
+        });
+
+        // Economic Profile
+        const econGrid = document.getElementById('dm-econ-grid');
+        econGrid.innerHTML = '';
+        const ep = d.econProfile || {};
+        const econItems = [
+            { label: 'Trade Balance', value: ep.tradeBalance || '—', icon: '📊' },
+            { label: 'Primary Exports', value: ep.exports || '—', icon: '📦' },
+            { label: 'Major Industries', value: ep.industries || '—', icon: '🏭' },
+            { label: 'National Debt', value: ep.debt || '—', icon: '💳' },
+            { label: 'Unemployment', value: ep.unemployment || '—', icon: '👷' },
+            { label: 'Gini Index', value: ep.giniIndex || '—', icon: '⚖️' }
+        ];
+        econItems.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'dm-econ-item';
+            el.innerHTML = `
+                <div class="dm-econ-icon">${item.icon}</div>
+                <div class="dm-econ-label">${item.label}</div>
+                <div class="dm-econ-value">${item.value}</div>
+            `;
+            econGrid.appendChild(el);
+        });
+
+        // Reset to Overview tab
+        this.switchDossierTab('overview');
         this.closeRegionInfo();
+    }
+
+    switchDossierTab(tabId) {
+        document.querySelectorAll('.dm-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.dm-tab-panel').forEach(p => p.classList.remove('active'));
+        
+        const tab = document.querySelector(`.dm-tab[data-tab="${tabId}"]`);
+        const panel = document.getElementById(`dm-panel-${tabId}`);
+        if (tab) tab.classList.add('active');
+        if (panel) panel.classList.add('active');
     }
 
     closeDetailedModal() {

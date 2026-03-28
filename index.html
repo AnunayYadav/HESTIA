@@ -206,7 +206,7 @@
                 </div>
                 <div id="res-food" class="resource-item res-food" title="Global Food Supply for World Hunger">
                     <span class="res-label">Food</span>
-                    <span class="res-val">🍎 <span id="res-food-val">50</span>F</span>
+                    <span class="res-val">🍎 <span id="res-food-val">50</span>Mt</span>
                 </div>
                 <div class="resource-divider"></div>
                 <!-- Global Pollution, Health, and Economy stats removed from global view -->
@@ -307,73 +307,203 @@
 
 <!-- Detailed Country Modal (Premium Dossier) -->
 <div id="detailed-country-modal" class="detailed-modal-overlay" onclick="game.closeDetailedModal()">
-    <div class="detailed-modal-content" onclick="event.stopPropagation()">
-        <button class="detailed-modal-close" onclick="game.closeDetailedModal()">✕</button>
+    <div class="dm-content" onclick="event.stopPropagation()">
+        <button class="dm-close-btn" onclick="game.closeDetailedModal()">✕</button>
         
-        <div class="detailed-modal-header">
-            <h1 id="dm-name" class="detailed-country-name">NORTHERN HIGHLANDS</h1>
-            <div class="header-divider"></div>
+        <!-- Header Banner -->
+        <div class="dm-header-banner">
+            <div class="dm-flag-frame">
+                <img id="dm-flag" src="" alt="National Flag">
+                <div class="dm-flag-scanline"></div>
+            </div>
+            <div class="dm-header-info">
+                <h1 id="dm-name" class="dm-country-name">NORTHERN HIGHLANDS</h1>
+                <div class="dm-header-meta">
+                    <span class="dm-gov-badge" id="dm-gov-detailed">DEMOCRATIC</span>
+                    <span class="dm-status-indicator" id="dm-status-tag">
+                        <span class="dm-status-dot"></span>STABLE
+                    </span>
+                </div>
+                <div class="dm-leader-row">
+                    <i class="fas fa-crown"></i>
+                    <span id="dm-leader">Chancellor Aldric</span>
+                    <span class="dm-leader-sep">—</span>
+                    <span id="dm-leader-desc" class="dm-leader-personality">Pragmatic diplomat</span>
+                </div>
+            </div>
+            <div class="dm-header-stats">
+                <div class="dm-hstat">
+                    <div class="dm-hstat-label">POPULATION</div>
+                    <div class="dm-hstat-value" id="dm-pop">840M</div>
+                </div>
+                <div class="dm-hstat">
+                    <div class="dm-hstat-label">GDP</div>
+                    <div class="dm-hstat-value" id="dm-gdp">$4.2T</div>
+                </div>
+                <div class="dm-hstat">
+                    <div class="dm-hstat-label">GROWTH</div>
+                    <div class="dm-hstat-value" id="dm-growth">+2.1%</div>
+                </div>
+            </div>
         </div>
 
-        <div class="detailed-modal-body">
-            <!-- Left Side: Identity & Philosophy -->
-            <div class="detailed-modal-side">
-                <div class="detailed-flag-wrapper">
-                    <img id="dm-flag" src="Assets/Flags/northern.png" alt="National Flag">
-                </div>
-                
-                <div class="info-group">
-                    <label><i class="fas fa-crown"></i> HEAD OF STATE</label>
-                    <div id="dm-leader" class="value">Chancellor Aldric</div>
-                    <div id="dm-gov-detailed" class="sub-label">Technocratic Democracy</div>
-                </div>
+        <!-- Tab Navigation -->
+        <div class="dm-tab-bar">
+            <button class="dm-tab active" data-tab="overview" onclick="game.switchDossierTab('overview')">
+                <i class="fas fa-globe"></i> OVERVIEW
+            </button>
+            <button class="dm-tab" data-tab="history" onclick="game.switchDossierTab('history')">
+                <i class="fas fa-landmark"></i> HISTORY & PHILOSOPHY
+            </button>
+            <button class="dm-tab" data-tab="sdg" onclick="game.switchDossierTab('sdg')">
+                <i class="fas fa-bullseye"></i> SDG INTELLIGENCE
+            </button>
+            <button class="dm-tab" data-tab="policies" onclick="game.switchDossierTab('policies')">
+                <i class="fas fa-balance-scale"></i> POLICIES & RELATIONS
+            </button>
+        </div>
 
-                <div class="info-group">
-                    <label><i class="fas fa-scroll"></i> PHILOSOPHY</label>
-                    <p id="dm-philosophy" class="philosophy-text">Focus on long-term sustainability through technological dominance and algorithmic governance.</p>
-                </div>
+        <!-- Tab Content Container -->
+        <div class="dm-tab-content">
 
-                <div class="detailed-big-stats">
-                    <div class="mini-stat">
-                        <label>POPULATION</label>
-                        <span id="dm-pop">840M</span>
+            <!-- TAB: Overview -->
+            <div class="dm-tab-panel active" id="dm-panel-overview">
+                <div class="dm-overview-grid">
+                    <!-- National Brief -->
+                    <div class="dm-card dm-card-wide">
+                        <div class="dm-card-header">
+                            <i class="fas fa-file-alt"></i> NATIONAL INTELLIGENCE BRIEF
+                        </div>
+                        <p id="dm-info" class="dm-card-body-text">The industrial heartland of the world...</p>
                     </div>
-                    <div class="mini-stat">
-                        <label>GDP</label>
-                        <span id="dm-gdp">$4.2T</span>
+
+                    <!-- Live Region Stats -->
+                    <div class="dm-card">
+                        <div class="dm-card-header">
+                            <i class="fas fa-chart-bar"></i> REGIONAL VITALS
+                        </div>
+                        <div class="dm-vitals-list" id="dm-vitals">
+                            <!-- Populated by engine -->
+                        </div>
+                    </div>
+
+                    <!-- Key Strengths & Threats -->
+                    <div class="dm-card">
+                        <div class="dm-card-header">
+                            <i class="fas fa-shield-alt"></i> STRATEGIC ASSESSMENT
+                        </div>
+                        <div class="dm-assessment" id="dm-assessment">
+                            <!-- Populated by engine -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Side: Lore & Progress -->
-            <div class="detailed-modal-main">
-                <div class="dossier-section">
-                    <h3><i class="fas fa-history"></i> HISTORICAL ARCHIVE</h3>
-                    <div class="scroll-box shadow-inset">
-                        <p id="dm-history">Loading archival data...</p>
-                    </div>
-                </div>
-
-                <div class="sdg-grid">
-                    <div class="sdg-column">
-                        <h3><i class="fas fa-check-circle"></i> ACHIEVED MILESTONES</h3>
-                        <div id="dm-sdg-achieved" class="sdg-list achieved">
-                            <!-- Tags here -->
+            <!-- TAB: History & Philosophy -->
+            <div class="dm-tab-panel" id="dm-panel-history">
+                <div class="dm-history-layout">
+                    <div class="dm-card dm-card-history">
+                        <div class="dm-card-header">
+                            <i class="fas fa-book-open"></i> HISTORICAL ARCHIVE
+                        </div>
+                        <div class="dm-history-scroll">
+                            <p id="dm-history"></p>
                         </div>
                     </div>
-                    <div class="sdg-column">
-                        <h3><i class="fas fa-bullseye"></i> ACTIVE TARGETS</h3>
-                        <div id="dm-sdg-goals" class="sdg-list active">
-                            <!-- Tags here -->
+                    <div class="dm-card dm-card-philosophy">
+                        <div class="dm-card-header">
+                            <i class="fas fa-scroll"></i> GOVERNING PHILOSOPHY
+                        </div>
+                        <blockquote id="dm-philosophy" class="dm-philosophy-quote"></blockquote>
+                        <div class="dm-philosophy-meta">
+                            <div class="dm-phil-item">
+                                <span class="dm-phil-label">SYSTEM</span>
+                                <span id="dm-gov-system" class="dm-phil-value">Technocratic Democracy</span>
+                            </div>
+                            <div class="dm-phil-item">
+                                <span class="dm-phil-label">ECONOMIC MODEL</span>
+                                <span id="dm-econ-model" class="dm-phil-value">Mixed Market</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- TAB: SDG Intelligence -->
+            <div class="dm-tab-panel" id="dm-panel-sdg">
+                <div class="dm-sdg-layout">
+                    <!-- SDG Achieved -->
+                    <div class="dm-card">
+                        <div class="dm-card-header dm-header-achieved">
+                            <i class="fas fa-trophy"></i> ACHIEVED MILESTONES
+                        </div>
+                        <div class="dm-sdg-list" id="dm-sdg-achieved">
+                            <!-- SDG cards populated by engine -->
+                        </div>
+                    </div>
+                    <!-- SDG Active Targets -->
+                    <div class="dm-card">
+                        <div class="dm-card-header dm-header-active">
+                            <i class="fas fa-crosshairs"></i> ACTIVE TARGETS
+                        </div>
+                        <div class="dm-sdg-list" id="dm-sdg-goals">
+                            <!-- SDG cards populated by engine -->
+                        </div>
+                    </div>
+                    <!-- SDG Overview -->
+                    <div class="dm-card dm-card-wide">
+                        <div class="dm-card-header">
+                            <i class="fas fa-info-circle"></i> STRATEGIC SDG NOTES
+                        </div>
+                        <p id="dm-sdg-notes" class="dm-card-body-text">Analysis of this nation's SDG trajectory...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Policies & Relations -->
+            <div class="dm-tab-panel" id="dm-panel-policies">
+                <div class="dm-policies-layout">
+                    <!-- National Policies -->
+                    <div class="dm-card">
+                        <div class="dm-card-header">
+                            <i class="fas fa-gavel"></i> NATIONAL POLICIES
+                        </div>
+                        <div class="dm-policies-list" id="dm-policies">
+                            <!-- Populated by engine -->
+                        </div>
+                    </div>
+                    <!-- Diplomatic Relations -->
+                    <div class="dm-card">
+                        <div class="dm-card-header">
+                            <i class="fas fa-handshake"></i> DIPLOMATIC RELATIONS
+                        </div>
+                        <div class="dm-relations-list" id="dm-relations">
+                            <!-- Populated by engine -->
+                        </div>
+                    </div>
+                    <!-- Economic Profile -->
+                    <div class="dm-card dm-card-wide">
+                        <div class="dm-card-header">
+                            <i class="fas fa-coins"></i> ECONOMIC PROFILE
+                        </div>
+                        <div class="dm-econ-grid" id="dm-econ-grid">
+                            <!-- Populated by engine -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-        
-        <div class="detailed-modal-footer">
-            <div class="status-blip"></div>
-            <span class="secure-line">ENCRYPTED COMMAND CONNECTION STABLE</span>
+
+        <!-- Footer -->
+        <div class="dm-footer">
+            <div class="dm-footer-left">
+                <div class="status-blip"></div>
+                <span class="dm-secure-text">ENCRYPTED COMMAND CHANNEL • CLASSIFICATION: SIGMA-7</span>
+            </div>
+            <div class="dm-footer-right">
+                <span class="dm-turn-info" id="dm-turn-info">TURN 0 / 40</span>
+            </div>
         </div>
     </div>
 </div>
