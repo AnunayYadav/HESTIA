@@ -38,22 +38,24 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Neural bridge requires [message] and [specialistName]. Protocol aborted." });
     }
 
-    // 🏎️ Direct Neural Call (Switching to 2.5-flash to resolve 404/429)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    // 🏎️ Direct Neural Call (Using gemini-1.5-flash with proper System Instructions)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            contents: [{
-                parts: [{ text: `SYSTEM INSTRUCTION: You are ${specialistName}, the ${role} in the HESTIA World Government simulation. 
+            system_instruction: {
+                parts: [{ text: `You are ${specialistName}, the ${role} in the HESTIA World Government simulation. 
                 ${persona} 
-                Speak strictly in your persona. Be concise, professional, and immersive. 
-                USER MESSAGE: ${message}` }]
+                Speak strictly in your persona. Be immersive, deep, and detailed. Stay in character at all times.` }]
+            },
+            contents: [{
+                parts: [{ text: message }]
             }],
             generationConfig: {
-                temperature: 0.7,
-                topP: 0.8,
+                temperature: 0.8,
+                topP: 0.9,
                 topK: 40,
-                maxOutputTokens: 500,
+                maxOutputTokens: 1000,
             }
         })
     });
