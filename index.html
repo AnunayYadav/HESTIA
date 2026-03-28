@@ -247,16 +247,45 @@
         <div class="spec-modal-layout">
             <div class="spec-modal-left">
                 <img id="sm-img" src="" alt="Specialist Portrait" class="sm-portrait">
-                <div id="sm-sdg" class="sm-sdg-tag"></div>
+                
+                <!-- Floating Chat Messages Container -->
+                <div id="sm-chat-overlay" class="sm-float-chat-container">
+                    <div id="sm-chat-messages" class="sm-float-chat-messages"></div>
+                </div>
+
+                <div class="sm-actions-row">
+                    <!-- Initial Comms Button -->
+                    <button id="sm-chat-btn" class="sm-chat-btn">
+                        <span class="btn-glow"></span>
+                        <span class="btn-text">INITIALIZE COMMS</span>
+                    </button>
+
+                    <!-- Hidden Chat Input Container -->
+                    <div id="sm-chat-input-wrapper" class="sm-chat-input-wrapper" style="display: none;">
+                        <input type="text" id="sm-chat-input" placeholder="Type message..." autocomplete="off">
+                        <button id="sm-chat-send" class="sm-chat-send">
+                            <i class="fas fa-paper-plane">▶</i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="spec-modal-right">
-                <h2 id="sm-name" class="sm-name">Name</h2>
-                <div id="sm-role" class="sm-role">Role</div>
-                <div id="sm-specialty" class="sm-specialty-badge">Specialty</div>
+                <div class="sm-header">
+                    <h2 id="sm-name" class="sm-name">Name</h2>
+                    <div id="sm-role" class="sm-role">Role</div>
+                    <div id="sm-sdg" class="sm-sdg-tag"></div>
+                </div>
                 
                 <p id="sm-desc" class="sm-description">Description goes here.</p>
                 
                 <div class="sm-stats-grid">
+                    <div class="sm-stat-box"><span class="sm-stat-label">Intelligence:</span> <span id="sm-int" class="sm-stat-value">0</span></div>
+                    <div class="sm-stat-box"><span class="sm-stat-label">Persuasion:</span> <span id="sm-per" class="sm-stat-value">0</span></div>
+                    <div class="sm-stat-box"><span class="sm-stat-label">Leadership:</span> <span id="sm-lea" class="sm-stat-value">0</span></div>
+                    <div class="sm-stat-box"><span class="sm-stat-label">Resilience:</span> <span id="sm-res" class="sm-stat-value">0</span></div>
+                </div>
+
+                <div class="sm-pros-cons-grid">
                     <div class="sm-stats-section">
                         <div class="sm-section-label">Pros</div>
                         <ul id="sm-pros" class="sm-pros-list"></ul>
@@ -267,16 +296,13 @@
                     </div>
                 </div>
 
-                <div class="sm-costs-panel">
+                <div class="sm-requirements">
                     <div class="sm-section-label">Deployment Requirements</div>
                     <div id="sm-costs" class="sm-costs-row"></div>
-                </div>
-
-                <div class="sm-actions-row">
-                    <button id="sm-chat-btn" class="sm-chat-btn">
-                        <span class="btn-glow"></span>
-                        <span class="btn-text">CHAT</span>
-                    </button>
+                    <div class="sm-costs-footer">
+                        <div class="sm-req-item">Deployment Cost: <span id="sm-deploy-cost" class="sm-cost-val">$0B</span></div>
+                        <div class="sm-req-item">Maintenance: <span id="sm-maint-cost" class="sm-cost-val">$0B/turn</span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -378,6 +404,7 @@
     </div>
 </div>
 
+<script src="personalities.js"></script>
 <script src="gamedata.js"></script>
 <script src="engine.js"></script>
 </body>

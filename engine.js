@@ -382,11 +382,18 @@ class GameEngine {
         document.getElementById('sm-role').textContent = s.role;
         document.getElementById('sm-desc').textContent = s.desc;
         document.getElementById('sm-sdg').textContent = s.sdg;
-        document.getElementById('sm-specialty').textContent = s.specialty || 'General Expert';
         
         const portrait = document.getElementById('sm-img');
         portrait.src = s.img || '';
         portrait.style.display = s.img ? 'block' : 'none';
+
+        // Stats
+        if (s.baseStats) {
+            document.getElementById('sm-int').textContent = s.baseStats.int;
+            document.getElementById('sm-per').textContent = s.baseStats.per;
+            document.getElementById('sm-lea').textContent = s.baseStats.lea;
+            document.getElementById('sm-res').textContent = s.baseStats.res;
+        }
 
         // Pros/Cons
         const prosList = document.getElementById('sm-pros');
@@ -403,25 +410,114 @@ class GameEngine {
             consList.appendChild(li);
         });
 
-        // Costs
+        // Detailed Requirements
+        const isDeployed = s.isDeployed;
+        document.getElementById('sm-deploy-cost').innerHTML = isDeployed ? 
+            `<span style="color:var(--accent-cyan)">ACTIVE ASSET</span>` : 
+            `<span class="sm-cost-val">$${s.deploymentCost}B</span> (Activation)`;
+            
+        document.getElementById('sm-maint-cost').innerHTML = isDeployed ? 
+            `<span class="sm-cost-val">$${s.maintenance}B</span> (Service Fee)` : 
+            `<span class="sm-cost-val">$${s.maintenance}B</span> (Per Mission)`;
+
+        // Action Costs Row
         const costsRow = document.getElementById('sm-costs');
         costsRow.innerHTML = '';
         Object.entries(s.costs).forEach(([k, v]) => {
             const item = document.createElement('div');
             item.className = 'sm-cost-item';
             let unit = k === 'budget' ? 'B' : (k === 'power' ? 'P' : 'I');
-            let label = k === 'budget' ? 'World Bank' : (k === 'power' ? 'Energy' : 'Influence');
-            item.innerHTML = `<span style="text-transform:capitalize">${label}</span>: <span class="sm-cost-val">${k === 'budget' ? '$' : ''}${v}${unit}</span>`;
+            let icon = k === 'budget' ? '💰' : (k === 'power' ? '⚡' : '🥖');
+            let label = k === 'budget' ? 'Capital' : (k === 'power' ? 'Power' : 'Influence');
+            item.innerHTML = `<span class="sm-cost-icon">${icon}</span> <span class="sm-cost-label">${label}</span>: <span class="sm-cost-val">${k === 'budget' ? '$' : ''}${v}${unit}</span>`;
             costsRow.appendChild(item);
         });
 
-        // Setup Buttons
-        document.getElementById('sm-chat-btn').onclick = () => {
-            this.openChat(s);
-        };
+        // Setup Immersive Modal Chat
+        const chatBtn = document.getElementById('sm-chat-btn');
+        const chatInputWrapper = document.getElementById('sm-chat-input-wrapper');
+        const chatMessages = document.getElementById('sm-chat-messages');
+        const chatInput = document.getElementById('sm-chat-input');
+        const sendBtn = document.getElementById('sm-chat-send');
+
+        if (chatBtn && chatInputWrapper) {
+            chatBtn.style.display = 'flex';
+            chatInputWrapper.style.display = 'none';
+            chatMessages.innerHTML = '';
+            chatInput.value = '';
+
+            chatBtn.onclick = () => {
+                chatBtn.style.display = 'none';
+                chatInputWrapper.style.display = 'flex';
+                this.addFloatingChatMessage('char', `Secure channel established. Identification verified. I am ${s.name}. Direct your inquiries.`);
+                chatInput.focus();
+            };
+
+            const handleSend = () => {
+                const text = chatInput.value.trim();
+                if (!text) return;
+                this.sendModalChatMessage(s, text);
+                chatInput.value = '';
+            };
+
+            sendBtn.onclick = handleSend;
+            chatInput.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSend();
+                }
+            };
+        }
 
         document.getElementById('spec-modal-overlay').classList.add('visible');
     }
+
+    // --- IMMERSIVE MODAL CHAT LOGIC ---
+    addFloatingChatMessage(sender, text) {
+        const container = document.getElementById('sm-chat-messages');
+        if (!container) return;
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `sm-float-msg ${sender === 'char' ? 'sm-float-msg-char' : 'sm-float-msg-user'}`;
+        
+        // Remove older messages for space
+        const allMsgs = container.querySelectorAll('.sm-float-msg');
+        if (allMsgs.length > 3) allMsgs[0].remove();
+
+        msgDiv.textContent = text;
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async sendModalChatMessage(spec, text) {
+        if (!text) return;
+        this.addFloatingChatMessage('user', text);
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    specialistName: spec.name,
+                    role: spec.role,
+                    persona: this.getPersonaPrompt(spec),
+                    message: text
+                })
+            });
+
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            
+            setTimeout(() => {
+                this.addFloatingChatMessage('char', data.text || "Static... no signal detected.");
+            }, 600);
+
+        } catch (err) {
+            this.addFloatingChatMessage('char', "[SIGNAL LOST: Re-initialize comms.]");
+        }
+    }
+
+
 
     // ========== CHARACTER CHAT (GEMINI) ==========
     openChat(spec) {
@@ -491,15 +587,26 @@ class GameEngine {
     }
 
     getPersonaPrompt(spec) {
-        const personas = {
-            health: "You are Vita, a dedicated medical expert. You are calm, empathetic but ruthlessly pragmatic when it comes to containing outbreaks. You view the world as a patient that needs stabilization.",
-            economist: "You are Delta and Sigma, a duo of brilliant economists. You often finish each other's thoughts. You speak in terms of market efficiency, capital flow, and financial equilibrium. Delta is more analytical, Sigma is more cautious.",
-            war: "You are Virdis, a battle-hardened War Commander with a high battle IQ. You are stoic and terse. You hate war and see it as a failure, but you will execute tactical strikes with absolute precision if needed.",
-            scientist: "You are Celsius, the Head Scientist. You are socially awkward, brilliant, and obsessed with research. You might ignore social cues or human emotions in favor of pure data and technological potential.",
-            diplomat: "You are Carmine, a Social Reformer and former noble. You are haughty but deeply protective of the common people. You speak with elegance and have a frighteningly deep understanding of human psychology and societal structures.",
-            environment: "You are Maris, an expert Ecologist. You are grounded, focused on the planetary balance. You speak about biological systems, pollution cycles, and the long-term sustainability of the biosphere."
-        };
-        return personas[spec.id] || "You are a professional advisor to the World Government.";
+        const allSpecsInfo = this.specialists.map(s => `${s.name} (${s.role}, specialized in ${s.sdg})`).join(', ');
+        
+        return `
+            You are ${spec.name}, the ${spec.role} in the HESTIA World Government simulation. 
+            
+            PHYSICAL TRAITS: Hair: ${spec.visuals.hair}, Eyes: ${spec.visuals.eyes}.
+            PERSONALITY: ${spec.personality}
+            
+            CORE MISSION: You are specialized in ${spec.sdg}. 
+            - Your goal is to teach the user about this SDG in a GAMIFIED, immersive way. 
+            - Avoid traditional, boring definitions. Instead, explain concepts through the lens of your expertise, your past experiences, or the current global simulation state.
+            - Use your specific personality (e.g., if you are Celsius, be socially awkward and research-obsessed; if you are Virdis, be stoic but show you care about the soldiers).
+            
+            CROSS-SDG KNOWLEDGE:
+            - If the user asks about an SDG that IS NOT yours, give a very brief hint or bit of information about it.
+            - Then, explicitly mention the name of the specialist who is the true expert in that field. 
+            - Available Specialists for reference: ${allSpecsInfo}.
+            
+            Stay strictly in character at all times. Be concise but impactful.
+        `.trim();
     }
 
     closeSpecModal() {
@@ -548,20 +655,35 @@ class GameEngine {
         const s = this.specialists.find(sp => sp.id === specId);
         const r = this.regions.find(rg => rg.id === regionId);
         
+        // --- Deployment Mechanics ---
+        // First-time deployment uses s.deploymentCost. 
+        // Subsequent missions use s.maintenance instead of s.costs.budget.
+        const isFirstTime = !s.isDeployed;
+        const capitalCost = isFirstTime ? s.deploymentCost : s.maintenance;
+        const otherCosts = { ...s.costs };
+        // If we use maintenance, we don't pay the mission's base budget cost again
+        if (!isFirstTime) delete otherCosts.budget; 
+
         // Resource check
-        const cost = s.costs;
-        if (cost.budget && this.resources.budget < cost.budget) { this.showToast('danger', 'Insufficient World Bank Reserves!'); return; }
-        if (cost.power && this.resources.power < cost.power) { this.showToast('danger', 'Insufficient Energy Grid Capacity!'); return; }
-        if (cost.influence && this.resources.influence < cost.influence) { this.showToast('danger', 'Insufficient Global Influence!'); return; }
+        if (this.resources.budget < capitalCost + (otherCosts.budget || 0)) { 
+            this.showToast('danger', 'Insufficient World Bank Reserves!'); return; 
+        }
+        if (otherCosts.power && this.resources.power < otherCosts.power) { 
+            this.showToast('danger', 'Insufficient Energy Grid Capacity!'); return; 
+        }
+        if (otherCosts.influence && this.resources.influence < otherCosts.influence) { 
+            this.showToast('danger', 'Insufficient Global Influence!'); return; 
+        }
 
         if (s.condition === 'conflict' && !r.crisis) { this.showToast('warning', 'War Commander requires conflict!'); return; }
         if (s.condition === 'stable' && (r.stats.stability < 50)) { this.showToast('warning', 'Scientist requires stability!'); return; }
 
         // Deduct resources
-        if (cost.budget) this.resources.budget -= cost.budget;
-        if (cost.power) this.resources.power -= cost.power;
-        if (cost.influence) this.resources.influence -= cost.influence;
+        this.resources.budget -= (capitalCost + (otherCosts.budget || 0));
+        if (otherCosts.power) this.resources.power -= otherCosts.power;
+        if (otherCosts.influence) this.resources.influence -= otherCosts.influence;
 
+        s.isDeployed = true; // Mark as permanent asset
         s.deployed = regionId;
         s.cooldown = s.cooldownMax;
         
@@ -1102,9 +1224,40 @@ class GameEngine {
         this.narrative.neutralSprite = s.img;
         this.narrative.talkingSprite = s.talkImg;
         
+        let dial1 = `Commander, I'm ready to execute the ${s.specialty} protocol in ${regionName}.`;
+        let dial2 = `Just follow my lead and prioritize the mission objectives.`;
+
+        // Personality-based overrides
+        switch(s.id) {
+            case 'health': 
+                dial1 = `Commander, the ${regionName} population is suffering. We must act before the pandemic spreads.`;
+                dial2 = `I'd rather be in my clinic, but for the sake of these people... I'll handle the quarantine synchronization.`;
+                break;
+            case 'economist':
+                dial1 = `The flow of fortune in ${regionName} is being disrupted. Sigma and I have identified the leak.`;
+                dial2 = `Meticulous intervention is required to balance the debts. We're ready, aren't we Sigma? [Sigma nods]`;
+                break;
+            case 'war':
+                dial1 = `Commander, hostilities in ${regionName} have reached critical levels. Tactical pacification is the only path.`;
+                dial2 = `I've memorized their names... let's not add any more to the list today. Stabilizing the front.`;
+                break;
+            case 'scientist':
+                dial1 = `FASCINATING! The data from ${regionName} is completely anomalous. I MUST gather more research!`;
+                dial2 = `Move aside, Commander! The ${s.specialty} process is delicate. My research demands perfection.`;
+                break;
+            case 'diplomat':
+                dial1 = `The commoners in ${regionName} are restless. Haughty leadership has failed them again.`;
+                dial2 = `I require your absolute cooperation. I will reform this structure, but make sure your effort is sufficient.`;
+                break;
+            case 'environment':
+                dial1 = `I... I can feel the biosphere in ${regionName} dying, Commander. It... it hurts.`;
+                dial2 = `Please, let's protect them. The flora and fauna... they have no other voice. I'll restore the balance.`;
+                break;
+        }
+
         this.narrative.queue = [
-            { name: s.name, text: `Commander, the situation in ${regionName} is critical. I'm ready to execute the ${s.specialty} protocol.`, sprite: s.img, talkingSprite: s.talkImg },
-            { name: s.name, text: `I'll handle the technical stabilization. Just follow my lead.`, sprite: s.img, talkingSprite: s.talkImg }
+            { name: s.name, text: dial1, sprite: s.img, talkingSprite: s.talkImg },
+            { name: s.name, text: dial2, sprite: s.img, talkingSprite: s.talkImg }
         ];
 
         document.getElementById('dialogue-overlay').classList.add('visible');
