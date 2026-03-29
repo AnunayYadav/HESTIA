@@ -5,14 +5,14 @@ const nextConfig = {
         return [
             {
                 source: '/gameplay',
-                destination: '/gameplay.html',
+                destination: '/gameplay.html'
             },
             {
-                source: '/index.html',
-                destination: '/',
-            },
+                source: '/favicon.ico',
+                destination: '/favicon.ico'
+            }
         ];
-    },
+    }
 };
 
 export default nextConfig;

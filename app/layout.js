@@ -3,6 +3,11 @@ import './globals.css';
 export const metadata = {
     title: 'Hestia — Main Menu',
     description: 'Cinematic interactive game main menu for Hestia, presented by Angel NextDoor.',
+    icons: {
+        icon: '/favicon.ico',
+        shortcut: '/favicon.ico',
+        apple: '/favicon.ico',
+    },
 };
 
 export default function RootLayout({ children }) {
