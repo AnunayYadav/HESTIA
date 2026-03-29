@@ -1206,10 +1206,9 @@ class GameEngine {
         // Standardized naming: neutral.png -> talk.png
         if (p.includes('neutral.png')) return p.replace('neutral.png', 'talk.png');
         
-        // Legacy fallbacks for project-specific naming quirks
-        if (p.includes('Hestia/Neutral Sprite')) return p.replace('Neutral Sprite', 'Neutral Talk Sprite');
-        if (p.includes('Manager/Neutral Sprite')) return p.replace('Neutral Sprite', 'Talking Sprite');
-        if (p.includes('Generic NPC #1/Neutral Sprite')) return p.replace('Neutral Sprite', 'Neutral Talking Sprite');
+        // Legacy fallbacks if someone still points to specific old filenames
+        if (p.includes('Neutral Sprite.png')) return p.replace('Neutral Sprite.png', 'talk.png');
+        if (p.includes('Neutral Sprite')) return p.replace('Neutral Sprite', 'talk.png');
         
         return p;
     }
@@ -1245,7 +1244,8 @@ class GameEngine {
         // Only update SRC if it actually changed to prevent flickering
         if (!img.src.includes(spritePath)) {
             const oldChar = img.getAttribute('data-char');
-            const newChar = spritePath.split('/')[1]; // E.g. Hestia or Manager
+            const parts = spritePath.split('/');
+            const newChar = parts[parts.length - 2]; 
             
             img.src = spritePath;
             
@@ -2050,7 +2050,7 @@ class GameEngine {
             { name: s.name, text: statusLine, sprite: s.img, talkingSprite: s.talkImg },
             { name: s.name, text: introLine, sprite: s.img, talkingSprite: s.talkImg },
             { name: s.name, text: consequenceLine, sprite: s.img, talkingSprite: s.talkImg },
-            { name: 'HESTIA [INTELLIGENCE]', text: `LESSON: ${learningLine}`, sprite: '/assets/characters/Hestia/Neutral Sprite.png', talkingSprite: '/assets/characters/Hestia/Neutral Talk Sprite.png' }
+            { name: 'HESTIA [INTELLIGENCE]', text: `LESSON: ${learningLine}`, sprite: '/assets/characters/Hestia/neutral.png', talkingSprite: '/assets/characters/Hestia/talk.png' }
         ];
 
         // Activate Dialogue Overlay
