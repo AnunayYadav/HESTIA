@@ -165,13 +165,80 @@ class GameEngine {
         if (this.narrative.typingTimer) clearTimeout(this.narrative.typingTimer);
         this.narrative.isTyping = false;
 
+        // Add cinematic overlay for transition
+        const overlay = document.createElement('div');
+        overlay.className = 'cinematic-transition-overlay';
+        document.body.appendChild(overlay);
+
         setTimeout(() => {
             screen.style.display = 'none';
-            document.getElementById('game-container').classList.add('active');
+            const gameContainer = document.getElementById('game-container');
+            gameContainer.classList.add('active');
+            gameContainer.classList.add('tutorial-mode'); // Hide HUD initially
             this.introPhase = false;
+            
             this.buildUI();
-            this.startGame();
+            
+            // Remove cinematic overlay after world builds
+            setTimeout(() => {
+                overlay.classList.add('fade-out');
+                setTimeout(() => overlay.remove(), 1500);
+                this.startGameplayTutorial();
+            }, 500);
         }, 1000);
+    }
+
+    startGameplayTutorial() {
+        this.tutorialActive = true;
+        this.narrative.active = true;
+        
+        const hSprite = "/assets/characters/Hestia/neutral.png";
+        const mSprite = "/assets/characters/Manager/neutral.png";
+
+        // Get profile name from localStorage
+        const profile = JSON.parse(localStorage.getItem('hestia_active_profile') || '{"name":"Controller"}');
+        const playerName = profile.name;
+
+        this.narrative.queue = [
+            { name: 'HESTIA', text: `Greetings, ${playerName}. This is Virdis—a world out of balance, and now, your responsibility.`, sprite: hSprite },
+            { name: 'HESTIA', text: "As the Controller of the Aegis Initiative, your purpose is simple yet monumental: achieve all 17 Sustainable Development Goals within 40 cycles.", sprite: hSprite },
+            { name: 'HESTIA', text: "If the scales tilt too far into chaos, the Golden Age will remain a dream, and Virdis will fall into the void.", sprite: hSprite },
+            { name: 'HESTIA', text: "But even a god-appointed arbiter needs a guide on the ground. Meet your primary liaison.", sprite: hSprite },
+            { name: 'FIELD MANAGER', text: "Comms active. Controller, I'm the Field Manager. I handle the logistics so you can focus on the big picture.", sprite: mSprite },
+            { name: 'FIELD MANAGER', text: "I've initialized the Aegis interface for you. It's empty for now to avoid overwhelm, but let me walk you through the core components.", sprite: mSprite },
+            ...TUTORIAL_STEPS.map(step => ({
+                name: 'FIELD MANAGER',
+                text: `${step.title.toUpperCase()}: ${step.text}`,
+                sprite: mSprite
+            })),
+            { name: 'FIELD MANAGER', text: "The situation in Virdis is deteriorating in several sectors. I'm handing over full system control now. Good luck, Controller.", sprite: mSprite }
+        ];
+        this.narrative.currentStep = 0;
+        
+        const overlay = document.getElementById('dialogue-overlay');
+        overlay.classList.add('visible');
+        
+        // Setup trigger
+        const trigger = document.getElementById('dialogue-box-trigger');
+        trigger.onclick = () => this.advanceNarrative();
+        
+        // Setup key handler
+        if (this._vnKeyHandler) window.removeEventListener('keydown', this._vnKeyHandler);
+        this._vnKeyHandler = (e) => {
+            if (e.code === 'Space') this.advanceNarrative();
+            if (e.code === 'Escape') this.endGameplayTutorial();
+        };
+        window.addEventListener('keydown', this._vnKeyHandler);
+        
+        this.processNarrativeStep();
+    }
+
+    endGameplayTutorial() {
+        this.tutorialActive = false;
+        const gameContainer = document.getElementById('game-container');
+        gameContainer.classList.remove('tutorial-mode'); // Show HUD
+        this.endNarrative();
+        this.startGame();
     }
 
     showTutorial() {
@@ -1265,7 +1332,11 @@ class GameEngine {
         if (this.narrative.currentStep < this.narrative.queue.length) {
             this.processNarrativeStep();
         } else {
-            this.showResolutionOptions();
+            if (this.tutorialActive) {
+                this.endGameplayTutorial();
+            } else {
+                this.showResolutionOptions();
+            }
         }
     }
 
@@ -2122,6 +2193,16 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Build initial UI and Start Core Loop
     game.buildUI(); 
-    game.startGame(); 
+    
+    // Check if tutorial is queued (from story)
+    if (localStorage.getItem('hestia_tutorial_queued') === 'true') {
+        localStorage.removeItem('hestia_tutorial_queued');
+        // Apply tutorial mode and start briefing
+        gameContainer.classList.add('tutorial-mode');
+        game.startGameplayTutorial();
+    } else {
+        game.startGame(); 
+    }
+    
     console.log('--- HESTIA: System Operational ---');
 });

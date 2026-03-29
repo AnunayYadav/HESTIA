@@ -277,6 +277,8 @@ export default function StoryPage() {
 
     const skipToEnd = useCallback(() => {
         setIsEnding(true);
+        // Queue tutorial for gameplay
+        localStorage.setItem('hestia_tutorial_queued', 'true');
         setTimeout(() => {
             window.location.href = '/gameplay';
         }, 1500);
@@ -598,7 +600,7 @@ export default function StoryPage() {
                     <CharacterSprite
                         src={showTalking ? '/assets/characters/hestia/talk.png' : '/assets/characters/hestia/neutral.png'}
                         className="character-sprite hestia-sprite"
-                        width={720}
+                        width={620}
                         skipTransparency={true}
                     />
                 </div>

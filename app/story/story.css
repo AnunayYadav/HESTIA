@@ -262,21 +262,21 @@
     bottom: 50px;
     left: 50%;
     transform: translateX(-50%) translateY(0);
-    width: 88%;
-    max-width: 1200px;
+    width: 82%;
+    max-width: 1050px;
     z-index: 1000;
     user-select: none;
     animation: dialogueSlideIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .dialogue-box {
-    background: rgba(10, 10, 15, 0.95); /* Deep opaque charcoal */
-    backdrop-filter: blur(40px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 40px; /* Matching screenshot */
-    padding: 40px 60px;
+    background: rgba(10, 10, 15, 0.85); /* Matches gameplay opaque charcoal */
+    backdrop-filter: blur(30px);
+    border: 2px solid rgba(255, 255, 255, 0.08); /* Matches gameplay */
+    border-radius: 24px; /* Matches gameplay */
+    padding: 35px 50px;
     min-height: 140px;
-    box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8);
     cursor: pointer;
     position: relative;
     display: flex;
@@ -287,13 +287,13 @@
     position: absolute;
     top: -42px;
     left: 40px;
-    background: #e1b473; /* Gold as requested */
+    background: var(--warm-gold); /* Gold as requested */
     color: #000;
-    padding: 10px 45px;
-    border-radius: 12px;
+    padding: 8px 32px;
+    border-radius: 12px 12px 0 0; /* Matches gameplay */
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     letter-spacing: 2px;
     box-shadow: 0 5px 25px rgba(0,0,0,0.5);
     text-transform: uppercase;
@@ -887,7 +887,7 @@
 }
 
 .hestia-sprite {
-    height: 750px;
+    height: 680px; /* Reduced from 750px */
     filter: drop-shadow(0 0 40px rgba(245, 184, 72, 0.4));
     animation: hestiaFloat 4s ease-in-out infinite;
     /* Canvas handles transparency */
