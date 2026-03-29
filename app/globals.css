@@ -994,10 +994,16 @@ html, body {
 .credit-logo-main {
     display: block;
     margin: 0 auto;
-    max-width: 200px;
-    width: 80%;
+    max-width: 260px;
+    width: 90%;
     height: auto;
-    filter: drop-shadow(0 0 40px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 0 40px rgba(0, 0, 0, 0.6));
+    animation: logoPulse 12s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 40px rgba(0, 0, 0, 0.6)); }
+    50% { transform: scale(1.05); filter: drop-shadow(0 0 60px rgba(232, 134, 10, 0.2)); }
 }
 
 .credit-divider {
@@ -1140,14 +1146,90 @@ html, body {
 }
 
 .credit-text {
-    font-size: 0.9rem;
-    line-height: 1.8;
+    font-size: 1.1rem;
+    line-height: 2.1;
     color: var(--color-text-muted);
     font-family: var(--font-body);
     font-weight: 300;
-    max-width: 400px;
+    max-width: 650px;
     margin: 0 auto;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
+    font-style: italic;
+    opacity: 0.9;
+    position: relative;
+}
+
+.mission-section {
+    margin-top: 60px;
+    padding-bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mission-separator {
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-orange-warm), transparent);
+    margin: 0 auto 40px;
+    opacity: 0.2;
+}
+
+.mission-content {
+    background: radial-gradient(circle at center, rgba(232, 134, 10, 0.06) 0%, transparent 75%);
+    padding: 40px 20px;
+    border-radius: 50% 50% 0 0;
+    position: relative;
+    max-width: 650px;
+    width: 100%;
+    animation: breatheMission 8s ease-in-out infinite;
+}
+
+@keyframes breatheMission {
+    0%, 100% { transform: scale(1); opacity: 0.95; }
+    50% { transform: scale(1.01); opacity: 1; }
+}
+
+.mission-content::before {
+    content: '"';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: 4rem;
+    color: var(--color-orange-warm);
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+.credit-text {
+    font-size: 1.25rem;
+    line-height: 2.2;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-weight: 300;
+    max-width: 700px;
+    margin: 0 auto;
+    letter-spacing: 0.12em;
+    font-style: italic;
+    text-align: center;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, var(--color-text-muted) 0%, #fff 50%, var(--color-text-muted) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0.9;
+}
+
+.mission-footer-ornament {
+    margin-top: 30px;
+    font-size: 1.2rem;
+    color: var(--color-orange-warm);
+    opacity: 0.3;
+    letter-spacing: 1.5em;
+    padding-left: 1.5em;
+    text-align: center;
 }
 
 /* ============================================

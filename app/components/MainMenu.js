@@ -344,11 +344,17 @@ export default function MainMenu({ onLoginSuccess, hideUI }) {
                                 </div>
                             </div>
 
-                            <div className="credit-section">
-                                <h2>Studio Mission</h2>
-                                <p className="credit-text">
-                                    Angle NextDoor is an independent creative studio dedicated to crafting immersive narratives and advanced simulations. Project Hestia is our flagship experience, built to demonstrate the future of collaborative storytelling and technical innovation.
-                                </p>
+                            <div className="credit-section mission-section">
+                                <div className="mission-separator" />
+                                <h2 className="section-title">Studio Mission</h2>
+                                <div className="mission-content">
+                                    <p className="credit-text">
+                                        Angle NextDoor is an independent creative studio dedicated to crafting immersive narratives and advanced simulations. Project Hestia is our flagship experience, built to demonstrate the future of collaborative storytelling and technical innovation.
+                                    </p>
+                                </div>
+                                <div className="mission-footer-ornament">
+                                    <span>◆</span>
+                                </div>
                             </div>
                         </div>
                     </div>
