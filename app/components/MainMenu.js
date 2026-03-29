@@ -246,7 +246,7 @@ export default function MainMenu({ onLoginSuccess, hideUI }) {
                         <div className="about-modal-body">
                             <div className="credit-header">
                                 <div className="studio-info">
-                                    <h1 className="credit-studio">Angle NextDoor</h1>
+                                    <h1 className="credit-studio">Angel NextDoor</h1>
                                     <span className="studio-label">STUDIO PRESENTS</span>
                                 </div>
                                 <div className="credit-divider" />
@@ -260,29 +260,88 @@ export default function MainMenu({ onLoginSuccess, hideUI }) {
                             </div>
 
                             <div className="credit-section">
-                                <h2>Development Team</h2>
-                                <ul className="credit-roles">
-                                    <li>
-                                        <span className="role">Creative Director & Narrative Architect</span>
-                                        <span className="name">Abhinav Kumar Mishra</span>
-                                    </li>
-                                    <li>
-                                        <span className="role">Lead Systems Engineer & Technical Architect</span>
-                                        <span className="name">Anunay Yadav</span>
-                                    </li>
-                                    <li>
-                                        <span className="role">Core Gameplay & Framework Developer</span>
-                                        <span className="name">Abhinav Chauhan</span>
-                                    </li>
-                                    <li>
-                                        <span className="role">Lead Character Artist</span>
-                                        <span className="name">Manthan Choudhary</span>
-                                    </li>
-                                    <li>
-                                        <span className="role">Technical Documentation & UI Assets Lead</span>
-                                        <span className="name">Ayusman Pal</span>
-                                    </li>
-                                </ul>
+                                <h2 className="section-title">The Masterminds</h2>
+                                <div className="credits-grid">
+                                    {/* ANUNAY — Systems & Vision */}
+                                    <div className="credit-entry">
+                                        <div className="entry-header">
+                                            <span className="name">Anunay Yadav</span>
+                                            <span className="specialty-tag">Vision & Systems</span>
+                                        </div>
+                                        <div className="roles-container">
+                                            <span className="role">Visionary Director</span>
+                                            <span className="role">Game Architect</span>
+                                            <span className="role">Chief Systems Architect</span>
+                                            <span className="role">Lead Gameplay Engineer</span>
+                                            <span className="role">Executive Game Designer</span>
+                                            <span className="role">Creative Technologist</span>
+                                            <span className="role">Mastermind of Systems</span>
+                                            <span className="role">World Systems Director</span>
+                                        </div>
+                                    </div>
+
+                                    {/* ABHINAV KUMAR MISHRA — UI & Narrative */}
+                                    <div className="credit-entry">
+                                        <div className="entry-header">
+                                            <span className="name">Abhinav Kumar Mishra</span>
+                                            <span className="specialty-tag">Narrative & Experience</span>
+                                        </div>
+                                        <div className="roles-container">
+                                            <span className="role">Narrative Architect</span>
+                                            <span className="role">Experience Designer</span>
+                                            <span className="role">UI Vision Designer</span>
+                                            <span className="role">Story Systems Designer</span>
+                                            <span className="role">Interactive Narrative Designer</span>
+                                            <span className="role">Cinematic UI Designer</span>
+                                        </div>
+                                    </div>
+
+                                    {/* MANTHAN — Lore & Characters */}
+                                    <div className="credit-entry">
+                                        <div className="entry-header">
+                                            <span className="name">Manthan Choudhary</span>
+                                            <span className="specialty-tag">World & Lore</span>
+                                        </div>
+                                        <div className="roles-container">
+                                            <span className="role">Lore Architect</span>
+                                            <span className="role">Character Visionary</span>
+                                            <span className="role">Worldbuilding Director</span>
+                                            <span className="role">Narrative World Designer</span>
+                                            <span className="role">Character & Mythos Designer</span>
+                                            <span className="role">Story Universe Creator</span>
+                                        </div>
+                                    </div>
+
+                                    {/* ABHINAV CHAUHAN — Support & Implementation */}
+                                    <div className="credit-entry">
+                                        <div className="entry-header">
+                                            <span className="name">Abhinav Chauhan</span>
+                                            <span className="specialty-tag">Technical Associate</span>
+                                        </div>
+                                        <div className="roles-container">
+                                            <span className="role">Technical Support Engineer</span>
+                                            <span className="role">Development Associate</span>
+                                            <span className="role">Junior Systems Engineer</span>
+                                            <span className="role">Implementation Specialist</span>
+                                            <span className="role">Engineering Support</span>
+                                        </div>
+                                    </div>
+
+                                    {/* AYUSMAN PAL — Assets & Content */}
+                                    <div className="credit-entry">
+                                        <div className="entry-header">
+                                            <span className="name">Ayusman Pal</span>
+                                            <span className="specialty-tag">Production & Assets</span>
+                                        </div>
+                                        <div className="roles-container">
+                                            <span className="role">Visual Assets Designer</span>
+                                            <span className="role">Media & Asset Engineer</span>
+                                            <span className="role">Production Designer</span>
+                                            <span className="role">Digital Assets Creator</span>
+                                            <span className="role">Content & Assets Designer</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="credit-section">

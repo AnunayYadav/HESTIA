@@ -877,12 +877,12 @@ html, body {
 
 .about-modal-card {
     position: relative;
-    width: 90%;
-    max-width: 560px;
+    width: 95%;
+    max-width: 800px;
     max-height: 85vh;
-    background: linear-gradient(160deg, rgba(18, 18, 16, 0.88) 0%, rgba(10, 10, 8, 0.96) 100%);
-    border: 1px solid rgba(232, 134, 10, 0.15);
-    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(18, 18, 16, 0.94) 0%, rgba(10, 10, 8, 0.98) 100%);
+    border: 1px solid rgba(232, 134, 10, 0.25);
+    border-radius: 4px;
     box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.7),
         0 0 60px rgba(232, 134, 10, 0.06),
@@ -1015,13 +1015,92 @@ html, body {
     margin-bottom: 0;
 }
 
-.credit-section h2 {
+.section-title {
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-size: 1.8rem;
     color: var(--color-orange-warm);
-    letter-spacing: 0.15em;
+    letter-spacing: 0.5em;
     text-transform: uppercase;
-    margin-bottom: 24px;
+    margin-bottom: 64px;
+    text-align: center;
+    position: relative;
+    text-shadow: 0 0 30px rgba(232, 134, 10, 0.4);
+}
+
+.credits-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+    margin-top: 60px;
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.credit-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 0;
+    transition: all 0.4s var(--transition-smooth);
+    position: relative;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.credit-entry:last-child {
+    border-bottom: none;
+}
+
+.credit-entry:hover {
+    transform: translateY(-2px);
+}
+
+.entry-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.entry-header::after {
+    display: none;
+}
+
+.specialty-tag {
+    font-size: 0.65rem;
+    color: var(--color-orange);
+    text-transform: uppercase;
+    letter-spacing: 0.5em;
+    font-weight: 800;
+    opacity: 0.6;
+}
+
+.credit-entry .name {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--color-gold-light);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px rgba(162, 232, 162, 0.1);
+}
+
+.roles-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.role {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-weight: 400;
+    line-height: 1.8;
+    opacity: 0.8;
 }
 
 .credit-roles {
@@ -1043,7 +1122,7 @@ html, body {
     transform: scale(1.05);
 }
 
-.role {
+.role-legacy {
     font-size: 0.7rem;
     color: var(--color-gold);
     text-transform: uppercase;
@@ -1052,7 +1131,7 @@ html, body {
     opacity: 0.8;
 }
 
-.name {
+.name-legacy {
     font-family: var(--font-display);
     font-size: 1.4rem;
     color: var(--color-text);

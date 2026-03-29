@@ -48,6 +48,18 @@ class GameEngine {
             talkingFlip: false,
             talkingTimer: null
         };
+
+        // Map Control State (Zoom & Pan)
+        this.mapState = {
+            zoom: 1,
+            panX: 0,
+            panY: 0,
+            isDragging: false,
+            lastMouseX: 0,
+            lastMouseY: 0,
+            minZoom: 1,
+            maxZoom: 4
+        };
     }
 
     startIntro() {
@@ -343,6 +355,10 @@ class GameEngine {
         this.renderSpecialists();
         this.renderRegions();
         this.updateAllUI(true); // first run immediate
+        if (!this.mapControlsInitialized) {
+            this.initMapControls();
+            this.mapControlsInitialized = true;
+        }
     }
 
     updateAllUI(immediate = false) {
@@ -654,6 +670,7 @@ class GameEngine {
 
     renderRegions() {
         const wrapper = document.getElementById('map-wrapper');
+        if (!wrapper) return;
         document.querySelectorAll('.region-overlay').forEach(el => el.remove());
         this.regions.forEach(r => {
             const div = document.createElement('div');
@@ -664,6 +681,172 @@ class GameEngine {
             div.innerHTML = `<div class="region-label">${r.name}</div><div class="region-icons">${icons}</div>`;
             wrapper.appendChild(div);
         });
+    }
+
+    initMapControls() {
+        const area = document.querySelector('.map-area');
+        const wrapper = document.getElementById('map-wrapper');
+        const zoomIn = document.getElementById('map-zoom-in');
+        const zoomOut = document.getElementById('map-zoom-out');
+        const reset = document.getElementById('map-reset');
+
+        if (!area || !wrapper) return;
+
+        // Initialize transformation states
+        this.mapState.isDragging = false;
+        this.mapState.touchLastDist = 0;
+
+        // Mouse Wheel Zoom
+        area.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.15 : 0.15;
+            this.handleZoom(delta, e.clientX, e.clientY);
+        }, { passive: false });
+
+        // Pan Logic (Mouse)
+        area.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.map-control-btn') || e.target.closest('.region-overlay')) return;
+            
+            this.mapState.isDragging = true;
+            this.mapState.lastMouseX = e.clientX;
+            this.mapState.lastMouseY = e.clientY;
+            area.style.cursor = 'grabbing';
+            this.closeRegionInfo();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!this.mapState.isDragging) return;
+            const dx = e.clientX - this.mapState.lastMouseX;
+            const dy = e.clientY - this.mapState.lastMouseY;
+            this.mapState.panX += dx;
+            this.mapState.panY += dy;
+            this.mapState.lastMouseX = e.clientX;
+            this.mapState.lastMouseY = e.clientY;
+            this.updateMapTransform();
+        });
+
+        window.addEventListener('mouseup', () => {
+            this.mapState.isDragging = false;
+            if (area) area.style.cursor = 'grab';
+        });
+
+
+
+        // Touch Support
+        area.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.map-control-btn') || e.target.closest('.region-overlay')) return;
+            if (e.touches.length === 1) {
+                this.mapState.isDragging = true;
+                this.mapState.lastMouseX = e.touches[0].clientX;
+                this.mapState.lastMouseY = e.touches[0].clientY;
+            } else if (e.touches.length === 2) {
+                this.mapState.isDragging = false;
+                this.mapState.touchLastDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: true });
+
+        area.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && this.mapState.isDragging) {
+                const dx = e.touches[0].clientX - this.mapState.lastMouseX;
+                const dy = e.touches[0].clientY - this.mapState.lastMouseY;
+                this.mapState.panX += dx;
+                this.mapState.panY += dy;
+                this.mapState.lastMouseX = e.touches[0].clientX;
+                this.mapState.lastMouseY = e.touches[0].clientY;
+                this.updateMapTransform();
+            } else if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const delta = (dist - this.mapState.touchLastDist) / 100;
+                const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                this.handleZoom(delta, centerX, centerY);
+                this.mapState.touchLastDist = dist;
+            }
+        }, { passive: true });
+
+        area.addEventListener('touchend', () => {
+            this.mapState.isDragging = false;
+            this.mapState.touchLastDist = 0;
+        });
+        
+        // Initialize zoom and pan constraints
+        this.handleZoom(0);
+    }
+
+    handleZoom(delta, centerX, centerY) {
+        const area = document.querySelector('.map-area');
+        const wrapper = document.getElementById('map-wrapper');
+        if (!area || !wrapper) return;
+
+        const areaRect = area.getBoundingClientRect();
+        const wrapRect = wrapper.getBoundingClientRect();
+        
+        // Base width/height (unscaled)
+        const baseW = wrapRect.width / this.mapState.zoom;
+        const baseH = wrapRect.height / this.mapState.zoom;
+
+        // Ensure zoom is at least what's needed to cover the entire area
+        const coverZoom = Math.max(areaRect.width / baseW, areaRect.height / baseH);
+        this.mapState.minZoom = coverZoom;
+
+        const oldZoom = this.mapState.zoom;
+        const newZoom = Math.min(this.mapState.maxZoom, Math.max(this.mapState.minZoom, oldZoom + delta));
+        
+        if (oldZoom === newZoom) {
+            // Even if same zoom, we might need a transform update to enforce new constraints
+            this.updateMapTransform();
+            return;
+        }
+
+        if (centerX !== undefined && centerY !== undefined) {
+            const mouseX = centerX - areaRect.left - areaRect.width / 2;
+            const mouseY = centerY - areaRect.top - areaRect.height / 2;
+            const localX = (mouseX - this.mapState.panX) / oldZoom;
+            const localY = (mouseY - this.mapState.panY) / oldZoom;
+            this.mapState.panX = mouseX - localX * newZoom;
+            this.mapState.panY = mouseY - localY * newZoom;
+        }
+        
+        this.mapState.zoom = newZoom;
+        this.updateMapTransform();
+    }
+
+    updateMapTransform() {
+        const wrapper = document.getElementById('map-wrapper');
+        const area = document.querySelector('.map-area');
+        if (!wrapper || !area) return;
+
+        // --- Boundary Clamping ---
+        const areaRect = area.getBoundingClientRect();
+        const wrapRect = wrapper.getBoundingClientRect();
+        
+        // Base width/height (unscaled)
+        const baseW = wrapRect.width / this.mapState.zoom;
+        const baseH = wrapRect.height / this.mapState.zoom;
+
+        // Scaled dimensions
+        const scaledW = baseW * this.mapState.zoom;
+        const scaledH = baseH * this.mapState.zoom;
+
+        // Max pan is half the difference between scaled map and container
+        const maxPanX = Math.max(0, (scaledW - areaRect.width) / 2);
+        const maxPanY = Math.max(0, (scaledH - areaRect.height) / 2);
+
+        this.mapState.panX = Math.max(-maxPanX, Math.min(maxPanX, this.mapState.panX));
+        this.mapState.panY = Math.max(-maxPanY, Math.min(maxPanY, this.mapState.panY));
+
+        wrapper.style.transform = `translate(${this.mapState.panX}px, ${this.mapState.panY}px) scale(${this.mapState.zoom})`;
+        
+        if (this.selectedRegion) {
+            const r = this.regions.find(reg => reg.id === this.selectedRegion);
+            if (r) this.showRegionInfo(r);
+        }
     }
 
     getRegionStatusClass(r) {
@@ -689,21 +872,14 @@ class GameEngine {
         this.updateAllUI();
     }
 
-    // ---- ACTIONS ----
     tryDeploySpecialist(specId, regionId) {
         const s = this.specialists.find(sp => sp.id === specId);
         const r = this.regions.find(rg => rg.id === regionId);
-        
-        // --- Deployment Mechanics ---
-        // First-time deployment uses s.deploymentCost. 
-        // Subsequent missions use s.maintenance instead of s.costs.budget.
         const isFirstTime = !s.isDeployed;
         const capitalCost = isFirstTime ? s.deploymentCost : s.maintenance;
         const otherCosts = { ...s.costs };
-        // If we use maintenance, we don't pay the mission's base budget cost again
         if (!isFirstTime) delete otherCosts.budget; 
 
-        // Resource check
         if (this.resources.budget < capitalCost + (otherCosts.budget || 0)) { 
             this.showToast('danger', 'Insufficient World Bank Reserves!'); return; 
         }
@@ -717,12 +893,11 @@ class GameEngine {
         if (s.condition === 'conflict' && !r.crisis) { this.showToast('warning', 'War Commander requires conflict!'); return; }
         if (s.condition === 'stable' && (r.stats.stability < 50)) { this.showToast('warning', 'Scientist requires stability!'); return; }
 
-        // Deduct resources
         this.resources.budget -= (capitalCost + (otherCosts.budget || 0));
         if (otherCosts.power) this.resources.power -= otherCosts.power;
         if (otherCosts.food) this.resources.food -= otherCosts.food;
 
-        s.isDeployed = true; // Mark as permanent asset
+        s.isDeployed = true;
         s.deployed = regionId;
         s.cooldown = s.cooldownMax;
         
@@ -735,28 +910,35 @@ class GameEngine {
 
     showRegionInfo(r) {
         const panel = document.getElementById('region-info');
-        
-        // Calculate center of region overlay (percentages)
+        const area = document.querySelector('.map-area');
+        if (!panel || !area || !r) return;
+
+        const rect = area.getBoundingClientRect();
+        const mapW = rect.width;
+        const mapH = rect.height;
+
         const centerX = parseFloat(r.x) + parseFloat(r.w) / 2;
         const centerY = parseFloat(r.y) + parseFloat(r.h) / 2;
+
+        const worldXPx = (centerX - 50) / 100 * mapW;
+        const worldYPx = (centerY - 50) / 100 * mapH;
+
+        const finalXPx = worldXPx * this.mapState.zoom + this.mapState.panX;
+        const finalYPx = worldYPx * this.mapState.zoom + this.mapState.panY;
+
+        panel.style.left = `calc(50% + ${finalXPx}px)`;
+        panel.style.top = `calc(50% + ${finalYPx}px)`;
         
-        panel.style.left = centerX + '%';
-        panel.style.top = centerY + '%';
-        
-        // Smart positioning: detect screen edges to prevent clipping
         panel.classList.remove('pos-bottom', 'pos-left', 'pos-right');
+        if (centerX < 25) panel.classList.add('pos-left');
+        else if (centerX > 75) panel.classList.add('pos-right');
         
-        if (centerY < 45) {
-            panel.classList.add('pos-bottom');
-        }
-        
-        if (centerX < 30) {
-            panel.classList.add('pos-left');
-        } else if (centerX > 70) {
-            panel.classList.add('pos-right');
-        }
-        
+        const panelRect = panel.getBoundingClientRect();
+        if (panelRect.top < 100) panel.classList.add('pos-bottom');
+
         panel.classList.add('visible');
+        this.selectedRegion = r.id;
+
         document.getElementById('ri-name').textContent = r.name;
         document.getElementById('ri-gov').textContent = r.gov.toUpperCase();
         document.getElementById('ri-gov').className = 'region-info-gov ' + r.gov;
@@ -774,18 +956,20 @@ class GameEngine {
         if (moreBtn) moreBtn.onclick = () => this.openDetailedModal(r.id);
 
         const actionsEl = document.getElementById('ri-actions');
-        actionsEl.innerHTML = '';
-        const actions = [
-            { text: 'Aid Grant (-$30B)', type: 'aid', cost:{budget:30}, effects:{health:10, economy:-5} },
-            { text: 'Sanction (-20P)', type: 'sanction', cost:{power:20}, effects:{stability:5, economy:-10} }
-        ];
-        actions.forEach(a => {
-            const btn = document.createElement('button');
-            btn.className = `region-action-btn btn-${a.type}`;
-            btn.textContent = a.text;
-            btn.onclick = () => this.applyQuickAction(r.id, a);
-            actionsEl.appendChild(btn);
-        });
+        if (actionsEl) {
+            actionsEl.innerHTML = '';
+            const actions = [
+                { text: 'Aid Grant (-$30B)', type: 'aid', cost:{budget:30}, effects:{health:10, economy:-5} },
+                { text: 'Sanction (-20P)', type: 'sanction', cost:{power:20}, effects:{stability:5, economy:-10} }
+            ];
+            actions.forEach(a => {
+                const btn = document.createElement('button');
+                btn.className = `region-action-btn btn-${a.type}`;
+                btn.textContent = a.text;
+                btn.onclick = () => this.applyQuickAction(r.id, a);
+                actionsEl.appendChild(btn);
+            });
+        }
     }
 
     applyQuickAction(regionId, action) {
