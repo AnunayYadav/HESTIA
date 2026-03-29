@@ -1,0 +1,945 @@
+/* ============================================
+   HESTIA — Cinematic Story Intro Styles
+   ============================================ */
+
+/* --- Color Palette Variables --- */
+:root {
+    --pink-light: #f2d4e0;
+    --pink-med: #e895b3;
+    --pink-deep: #c93068;
+    --green-light: #8fdb8f;
+    --green-med: #5db87a;
+    --green-deep: #3a9d6a;
+    --warm-orange: #e8860a;
+    --warm-gold: #f5b848;
+}
+
+/* ============ Story Container ============ */
+.story-container {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: #050505;
+    font-family: var(--font-body);
+    color: var(--color-text);
+}
+
+.story-scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    animation: sceneFadeIn 0.8s ease forwards;
+}
+
+@keyframes sceneFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ============ Film Grain ============ */
+.film-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    animation: grainShift 0.15s steps(3) infinite;
+}
+
+@keyframes grainShift {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(-1px, 1px); }
+    66% { transform: translate(1px, -1px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* ============ Background Image System ============ */
+.scene-bg-img {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.bg-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.scene-bg-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: rgba(5, 5, 5, 0.2);
+    pointer-events: none;
+}
+
+.dark-overlay {
+    background: rgba(5, 5, 5, 0.35);
+}
+
+.darker-overlay {
+    background: rgba(5, 5, 5, 0.5);
+}
+
+/* Subtle pan animation for walking scene */
+.walking-pan {
+    animation: slowPan 12s linear infinite alternate;
+    width: 120%;
+    margin-left: -10%;
+}
+
+@keyframes slowPan {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-8%); }
+}
+
+/* ============ Scene Vignette ============ */
+.scene-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(5, 5, 5, 0.6) 75%, rgba(5, 5, 5, 0.9) 100%);
+}
+
+/* ============================================================
+   CHARACTER SPRITES
+   ============================================================ */
+.sprite-character {
+    position: absolute;
+    z-index: 10;
+    animation: charsAppear 1.2s ease forwards;
+}
+
+.character-sprite {
+    height: 650px;
+    width: auto;
+    filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.7));
+    /* Canvas handles transparency, so no mask-image needed here */
+}
+
+@keyframes charsAppear {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Friend position in hangout scene */
+.friend-sprite-pos {
+    bottom: -15px;
+    right: 0px;
+}
+
+/* ============================================================
+   TRANSITIONS
+   ============================================================ */
+
+/* --- Book Page Turn --- */
+.transition-book {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background: linear-gradient(90deg, 
+        rgba(35, 30, 25, 0.0) 0%, 
+        rgba(35, 30, 25, 0.95) 45%, 
+        rgba(25, 20, 18, 1) 50%, 
+        rgba(35, 30, 25, 0.95) 55%, 
+        rgba(35, 30, 25, 0.0) 100%
+    );
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+}
+
+.transition-book.active {
+    animation: bookTurn 1.4s ease-in-out forwards;
+}
+
+@keyframes bookTurn {
+    0% { opacity: 1; transform: scaleX(0); transform-origin: left center; }
+    45% { opacity: 1; transform: scaleX(1); transform-origin: left center; }
+    55% { opacity: 1; transform: scaleX(1); transform-origin: right center; }
+    100% { opacity: 0; transform: scaleX(0); transform-origin: right center; }
+}
+
+/* --- Glitch Transition --- */
+.transition-glitch {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.transition-glitch.active {
+    animation: glitchFlash 0.8s steps(4) forwards;
+}
+
+@keyframes glitchFlash {
+    0% { opacity: 0; background: transparent; }
+    10% { opacity: 1; background: rgba(201, 48, 104, 0.4); transform: translateX(-3px); }
+    20% { opacity: 0.5; background: rgba(143, 219, 143, 0.3); transform: translateX(5px) skewX(-2deg); }
+    30% { opacity: 1; background: rgba(255, 255, 255, 0.9); transform: none; }
+    50% { opacity: 0.8; background: rgba(5, 5, 5, 0.95); transform: translateY(2px); }
+    70% { opacity: 0.3; background: rgba(201, 48, 104, 0.2); transform: translateX(-2px); }
+    90% { opacity: 0.1; background: transparent; }
+    100% { opacity: 0; }
+}
+
+/* --- Fade Transition --- */
+.transition-fade {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background: #050505;
+    opacity: 0;
+}
+
+.transition-fade.active {
+    animation: fadeThrough 1.4s ease-in-out forwards;
+}
+
+@keyframes fadeThrough {
+    0% { opacity: 0; }
+    40% { opacity: 1; }
+    60% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* --- Final Gameplay Transition --- */
+.transition-finish {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.transition-finish.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* --- Hard Cut --- */
+.transition-hardcut {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background: white;
+    opacity: 0;
+}
+
+.transition-hardcut.active {
+    animation: hardCut 0.2s ease forwards;
+}
+
+@keyframes hardCut {
+    0% { opacity: 0; }
+    50% { opacity: 1; background: white; }
+    100% { opacity: 1; background: #050505; }
+}
+
+/* ============================================================
+   DIALOGUE BOX
+   ============================================================ */
+/* ============================================================
+   DIALOGUE / VN OVERLAY (STRICT COMMANDER REPLICA)
+   ============================================================ */
+.dialogue-box-wrapper {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    width: 88%;
+    max-width: 1200px;
+    z-index: 1000;
+    user-select: none;
+    animation: dialogueSlideIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.dialogue-box {
+    background: rgba(10, 10, 15, 0.95); /* Deep opaque charcoal */
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 40px; /* Matching screenshot */
+    padding: 40px 60px;
+    min-height: 140px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.name-tag {
+    position: absolute;
+    top: -42px;
+    left: 40px;
+    background: #e1b473; /* Gold as requested */
+    color: #000;
+    padding: 10px 45px;
+    border-radius: 12px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+    text-transform: uppercase;
+}
+
+.dialogue-text {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: #f0f0f0;
+    font-family: 'Inter', sans-serif; /* Correct Font */
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.next-indicator {
+    position: absolute;
+    bottom: 25px;
+    right: 40px;
+    color: #f5b848;
+    font-size: 1.4rem;
+    animation: blink-indicator 1.2s infinite ease-in-out;
+}
+
+.controls-hint {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.25);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+}
+
+@keyframes blink-indicator {
+    0%, 100% { opacity: 0.3; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(8px); }
+}
+
+@keyframes dialogueSlideIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.dialogue-cursor {
+    display: inline-block;
+    margin-left: 2px;
+    opacity: 0;
+    color: #f5b848;
+}
+
+.dialogue-cursor.typing {
+    opacity: 1;
+}
+
+.dialogue-cursor.blink {
+    animation: cursorBlink 0.8s ease infinite;
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+.dialogue-cursor.typing {
+    opacity: 1;
+}
+
+.dialogue-cursor.blink {
+    animation: cursorBlink 0.8s ease infinite;
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+.dialogue-continue {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(138, 132, 120, 0.5);
+    text-align: right;
+    margin-top: 10px;
+    letter-spacing: 0.08em;
+    animation: continuePulse 1.5s ease infinite;
+}
+
+@keyframes continuePulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+}
+
+/* ============================================================
+   SCENE 1: HANGOUT
+   ============================================================ */
+/* Background is now an <img>, no CSS background needed */
+
+/* ============================================================
+   SCENE 2: PHONE CALL — Premium Incoming Call UI
+   ============================================================ */
+
+/* Blurred background for phone scene */
+.phone-bg-blur {
+    filter: blur(6px) brightness(0.4);
+    transform: scale(1.1);
+}
+
+/* Subtle phone screen glow on the character's face */
+.phone-screen-glow {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 400px;
+    background: radial-gradient(ellipse at center, rgba(100, 180, 255, 0.08) 0%, transparent 70%);
+    z-index: 8;
+    pointer-events: none;
+    animation: screenGlowPulse 2s ease-in-out infinite;
+}
+
+@keyframes screenGlowPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Phone call card — frosted glass style */
+.phone-call-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(340px, 85vw);
+    padding: 40px 30px 28px;
+    background: linear-gradient(160deg, rgba(20, 22, 30, 0.85) 0%, rgba(10, 12, 18, 0.92) 100%);
+    border: 1px solid rgba(100, 180, 255, 0.12);
+    border-radius: 24px;
+    backdrop-filter: blur(20px);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 40px rgba(100, 180, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    animation: cardSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardSlideIn {
+    from { opacity: 0; transform: translate(-50%, -45%) scale(0.9); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Animated pulse rings behind the avatar */
+.call-pulse-ring {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    border: 1.5px solid rgba(100, 180, 255, 0.15);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.call-pulse-ring.ring-1 {
+    animation: callRingPulse 2.4s ease-out infinite;
+}
+
+.call-pulse-ring.ring-2 {
+    animation: callRingPulse 2.4s 0.6s ease-out infinite;
+}
+
+.call-pulse-ring.ring-3 {
+    animation: callRingPulse 2.4s 1.2s ease-out infinite;
+}
+
+@keyframes callRingPulse {
+    0% { width: 80px; height: 80px; opacity: 0.6; }
+    100% { width: 220px; height: 220px; opacity: 0; }
+}
+
+/* Caller avatar circle */
+.caller-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(100, 180, 255, 0.2) 0%, rgba(60, 120, 200, 0.1) 100%);
+    border: 2px solid rgba(100, 180, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+.caller-avatar-icon {
+    font-size: 32px;
+    filter: grayscale(0.5);
+}
+
+/* Caller info text */
+.caller-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.caller-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(100, 180, 255, 0.7);
+    animation: labelPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes labelPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.caller-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgba(240, 240, 245, 0.95);
+    letter-spacing: 0.04em;
+}
+
+.caller-number {
+    font-size: 0.75rem;
+    color: rgba(200, 200, 210, 0.4);
+    letter-spacing: 0.06em;
+}
+
+/* Accept / Decline buttons */
+.call-actions {
+    display: flex;
+    gap: 48px;
+    margin-top: 12px;
+}
+
+.call-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: default;
+    pointer-events: none;
+}
+
+.decline-btn {
+    background: linear-gradient(135deg, #e63946 0%, #c1121f 100%);
+    box-shadow: 0 4px 20px rgba(230, 57, 70, 0.3);
+    color: white;
+}
+
+.accept-btn {
+    background: linear-gradient(135deg, #2dc653 0%, #1b9e3e 100%);
+    box-shadow: 0 4px 20px rgba(45, 198, 83, 0.3);
+    color: white;
+    animation: acceptPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes acceptPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(45, 198, 83, 0.3); }
+    50% { transform: scale(1.08); box-shadow: 0 4px 30px rgba(45, 198, 83, 0.5); }
+}
+
+/* Slide hint */
+.slide-hint {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(200, 200, 210, 0.25);
+    margin-top: 4px;
+}
+
+/* ============================================================
+   SCENE 4: ACCIDENT — TRUCK VIDEO
+   ============================================================ */
+.scene-accident.impact {
+    animation: screenShake 0.4s ease infinite;
+}
+
+.scene-accident.flash-white {
+    background: white !important;
+}
+
+.scene-accident.flash-white > * {
+    opacity: 0;
+}
+
+@keyframes screenShake {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-12px, 6px); }
+    50% { transform: translate(10px, -10px); }
+    75% { transform: translate(-6px, 4px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* Full-screen truck video */
+.truck-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 5;
+}
+
+.motion-blur-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 90;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(201, 48, 104, 0.15) 30%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        rgba(201, 48, 104, 0.15) 70%, 
+        transparent 100%
+    );
+    animation: motionBlur 0.2s ease infinite;
+}
+
+@keyframes motionBlur {
+    0% { opacity: 0.4; transform: scaleX(1); }
+    50% { opacity: 0.8; transform: scaleX(1.1); }
+    100% { opacity: 0.4; transform: scaleX(1); }
+}
+
+/* Skip Controls — Modern UI */
+.skip-controls {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    z-index: 10000;
+    display: flex;
+    gap: 12px;
+    opacity: 0.5;
+    transition: opacity 0.5s ease;
+}
+
+.skip-controls:hover {
+    opacity: 1;
+}
+
+.skip-btn {
+    background: rgba(10, 10, 10, 0.4);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    font-size: 0.7rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.skip-hestia:hover {
+    background: rgba(245, 184, 72, 0.12);
+    border-color: rgba(245, 184, 72, 0.3);
+    color: var(--warm-gold);
+    box-shadow: 0 0 20px rgba(245, 184, 72, 0.05);
+}
+
+.skip-finish:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.skip-icon {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Dialogue positioned at the top during accident */
+.accident-dialogue-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+}
+
+.accident-dialogue-top .dialogue-box {
+    top: 30px;
+    bottom: auto;
+    animation: dialogueShake 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes dialogueShake {
+    from { transform: translateX(-50%) rotate(-0.5deg); }
+    to { transform: translateX(-50%) rotate(0.5deg); }
+}
+
+/* ============================================================
+   SCENE 5: AFTERMATH — ENHANCED with ambulance sirens
+   ============================================================ */
+.scene-aftermath {
+    background: #000;
+}
+
+.aftermath-black {
+    position: absolute;
+    inset: 0;
+    background: #050505;
+}
+
+/* Ambulance siren lights */
+.siren-light {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 3s ease;
+}
+
+.siren-red.active {
+    background: radial-gradient(ellipse at 30% 40%, rgba(255, 30, 30, 0.08) 0%, transparent 60%);
+    animation: sirenFlashRed 1.2s ease-in-out infinite;
+}
+
+.siren-blue.active {
+    background: radial-gradient(ellipse at 70% 40%, rgba(30, 80, 255, 0.08) 0%, transparent 60%);
+    animation: sirenFlashBlue 1.2s 0.6s ease-in-out infinite;
+}
+
+@keyframes sirenFlashRed {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+@keyframes sirenFlashBlue {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+/* Fade out siren lights during phase 2 */
+.scene-aftermath.phase-2 .siren-light {
+    opacity: 0 !important;
+    animation: none !important;
+}
+
+.aftermath-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    font-size: 1.6rem;
+    color: rgba(224, 220, 212, 0.2);
+    letter-spacing: 0.5em;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.aftermath-text.visible {
+    opacity: 1;
+}
+
+.aftermath-text.fade-out {
+    opacity: 0;
+}
+
+.ringing-text {
+    font-style: italic;
+}
+
+/* ============================================================
+   SCENE 6: VOID
+   ============================================================ */
+.void-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, 
+        rgba(15, 12, 10, 1) 0%, 
+        rgba(8, 6, 5, 1) 60%, 
+        #030302 100%
+    );
+}
+
+.scene-void.phase-0 .void-bg {
+    background: #030302;
+}
+
+.scene-void.phase-1 .void-bg {
+    transition: background 2.5s ease;
+    background: radial-gradient(ellipse at center, 
+        rgba(30, 22, 15, 1) 0%, 
+        rgba(12, 8, 5, 1) 50%, 
+        #030302 100%
+    );
+}
+
+/* Hestia BG fade-in during void */
+.hestia-bg-fadein {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 3s ease;
+}
+
+.hestia-bg-fadein.visible {
+    opacity: 1;
+}
+
+.void-particles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.void-glow {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(232, 134, 10, 0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: voidGlowPulse 3s ease-in-out infinite;
+    z-index: 6;
+}
+
+@keyframes voidGlowPulse {
+    0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+/* ============================================================
+   SCENE 7: HESTIA APPEARS
+   ============================================================ */
+.hestia-divine-glow {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, 
+        rgba(245, 184, 72, 0.15) 0%, 
+        rgba(232, 134, 10, 0.08) 40%, 
+        transparent 70%
+    );
+    border-radius: 50%;
+    animation: hestiaGlowAppear 3s ease forwards, splashGlowPulse 4s 3s ease-in-out infinite;
+    z-index: 5;
+}
+
+@keyframes hestiaGlowAppear {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Hestia sprite container */
+.hestia-character-sprite {
+    position: absolute;
+    bottom: -15px;
+    right: 0px;
+    z-index: 10;
+    animation: hestiaReveal 2s 0.5s ease forwards;
+    opacity: 0;
+}
+
+@keyframes hestiaReveal {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hestia-sprite {
+    height: 750px;
+    filter: drop-shadow(0 0 40px rgba(245, 184, 72, 0.4));
+    animation: hestiaFloat 4s ease-in-out infinite;
+    /* Canvas handles transparency */
+}
+
+@keyframes hestiaFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.hestia-aura-glow {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 550px;
+    background: radial-gradient(ellipse at center, 
+        rgba(245, 184, 72, 0.1) 0%,
+        rgba(232, 134, 10, 0.05) 40%,
+        transparent 70%
+    );
+    border-radius: 50%;
+    animation: auraPulse 3s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes auraPulse {
+    0%, 100% { opacity: 0.6; transform: translateX(-50%) scaleY(1); }
+    50% { opacity: 1; transform: translateX(-50%) scaleY(1.1); }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+    .dialogue-box {
+        bottom: 20px;
+        padding: 20px 24px;
+    }
+    .character-sprite {
+        height: 400px;
+    }
+    .hestia-sprite {
+        height: 320px;
+    }
+    .friend-sprite-pos {
+        right: 0px;
+        bottom: -15px;
+    }
+    .truck-image {
+        object-fit: contain;
+    }
+}
